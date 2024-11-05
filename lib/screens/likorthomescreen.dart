@@ -33,12 +33,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
             itemCount: 100,
             itemBuilder: (context, index) {
               return  Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.network(
                     'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
                     width: screenSize.width,
-                    height: screenSize.height * 0.4,
+                    height: orientation == Orientation.portrait? screenSize.height * 0.1:screenSize.height * 0.36,
                   ),
                   const Text('Steve`s store'),
                   const Text('painting'),
