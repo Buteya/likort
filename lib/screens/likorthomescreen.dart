@@ -35,8 +35,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                 children: [
                   Image.network(
                         'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                        width: 150,
-                        height: 80,
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height/2,
                       ),
                    const Column(
                       mainAxisSize: MainAxisSize.min,
