@@ -23,6 +23,9 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [InkWell(onTap:(){
+          Navigator.of(context).pushNamed('/likortuserprofile');
+        },child: CircleAvatar())],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 6.0),
@@ -32,18 +35,23 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
             ),
             itemCount: 100,
             itemBuilder: (context, index) {
-              return  Column(
-                children: [
-                  Image.network(
-                    'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                    width: screenSize.width,
-                    height: orientation == Orientation.portrait? screenSize.height * 0.1:screenSize.height * 0.36,
-                  ),
-                  const Text('Steve`s store'),
-                  const Text('painting'),
-                  const Text('brushes'),
-                  const Text('\$1200'),
-                ],
+              return  InkWell(
+                onTap: (){
+                  Navigator.of(context).pushNamed('/likortproductdetail');
+                },
+                child: Column(
+                  children: [
+                    Image.network(
+                      'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
+                      width: screenSize.width,
+                      height: orientation == Orientation.portrait? screenSize.height * 0.1:screenSize.height * 0.36,
+                    ),
+                    const Text('Steve`s store'),
+                    const Text('painting'),
+                    const Text('brushes'),
+                    const Text('\$1200'),
+                  ],
+                ),
               );
             }),
       ),
