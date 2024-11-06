@@ -15,7 +15,14 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
       appBar: AppBar(
         title: const Text('create store'),
       ),
-      body: Column(children: [],),
+      body: Column(children: [
+        Text('store name'),
+        Text('store details'),
+        Text('location'),
+        ElevatedButton(onPressed: (){
+          Navigator.of(context).pushNamed('/likortcreatorprofilestore');
+        }, child: const Text('create store'),),
+      ],),
     );
   }
 }

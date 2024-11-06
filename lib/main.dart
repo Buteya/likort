@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:likort/auth/likortcreateartproduct.dart';
+import 'package:likort/auth/likortcreatorprofilestore.dart';
 import 'package:likort/auth/likortbuildcreatorstore.dart';
 import 'package:likort/auth/likortlogin.dart';
 import 'package:likort/auth/likortsignup.dart';
@@ -42,6 +44,8 @@ class MyApp extends StatelessWidget {
         '/likortlogin' : (context) => const LikortLogin(),
         '/likortuserprofile' : (context) => const LikortUserProfile(),
         '/lkortbuildcreatorstore' : (context) => const LikortBuildCreatorStore(),
+        '/likortcreatorprofilestore' : (context) => const LikortCreatorProfileStore(),
+        '/likortcreateartproduct' : (context) => const LikortCreateArtProduct(),
       },
     );
   }
