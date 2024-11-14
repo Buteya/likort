@@ -25,7 +25,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         title: Text(widget.title),
         actions: [InkWell(onTap:(){
           Navigator.of(context).pushNamed('/likortuserprofile');
-        },child: CircleAvatar())],
+        },child: const CircleAvatar())],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0,vertical: 6.0),

@@ -21,10 +21,10 @@ class _LikortCreatorProfileStoreState extends State<LikortCreatorProfileStore> {
             width: 400,
             height: 400,
           ),
-          Text('all store products'),
+          const Text('all store products'),
           ElevatedButton(onPressed: (){
 Navigator.of(context).pushNamed('/likortcreateartproduct');
-          }, child: Text('create product')),
+          }, child: const Text('create product')),
         ],
       ),
     );

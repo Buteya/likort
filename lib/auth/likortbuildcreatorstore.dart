@@ -16,9 +16,9 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
         title: const Text('create store'),
       ),
       body: Column(children: [
-        Text('store name'),
-        Text('store details'),
-        Text('location'),
+        const Text('store name'),
+        const Text('store details'),
+        const Text('location'),
         ElevatedButton(onPressed: (){
           Navigator.of(context).pushNamed('/likortcreatorprofilestore');
         }, child: const Text('create store'),),

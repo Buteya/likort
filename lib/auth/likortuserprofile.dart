@@ -18,7 +18,7 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
@@ -31,22 +31,22 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
               onTap: () {
                 Navigator.of(context).pushReplacementNamed('/');
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.store_mall_directory_rounded),
-              title: Text('create store'),
+              title: const Text('create store'),
               onTap: () {
                 Navigator.of(context).pushReplacementNamed('/lkortbuildcreatorstore');
               },
