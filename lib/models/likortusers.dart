@@ -4,6 +4,7 @@ class User {
   final String lastname;
   final String email;
   final String password;
+  final String phone;
   final String usertype;
   final double latitude;
   final double longitude;
@@ -14,6 +15,7 @@ class User {
     required this.lastname,
     required this.email,
     required this.password,
+    required this.phone,
     this.usertype = 'basic user',
     required this.latitude,
     required this.longitude,
@@ -26,6 +28,7 @@ class User {
       lastname: json['lastname'],
       email: json['email'],
       password: json['password'],
+      phone: json['phone'],
       usertype: json['usertype'],
       latitude: json['latitude'],
       longitude: json['longitude'],
@@ -39,6 +42,7 @@ class User {
       'lastname': lastname,
       'email': email,
       'password':password,
+      'phone':phone,
       'usertype':usertype,
       'latitude': latitude,
       'longitude': longitude,
