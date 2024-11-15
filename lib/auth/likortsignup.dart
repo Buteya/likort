@@ -187,30 +187,33 @@ class _LikortSignupState extends State<LikortSignup> {
                             : MediaQuery.of(context).size.height * .4,
                         child: Expanded(
                           child: _currentPosition != null
-                              ? GoogleMap(
-                                  onMapCreated: (controller) {
-                                    _mapController = controller;
-                                  },
-                                  initialCameraPosition: CameraPosition(
-                                    target: LatLng(
-                                      _currentPosition!.latitude,
-                                      _currentPosition!.longitude,
+                              ? SizedBox(
+                            height: MediaQuery.of(context).size.height * .4,
+                                child: GoogleMap(
+                                    onMapCreated: (controller) {
+                                      _mapController = controller;
+                                    },
+                                    initialCameraPosition: CameraPosition(
+                                      target: LatLng(
+                                        _currentPosition!.latitude,
+                                        _currentPosition!.longitude,
+                                      ),
+                                      zoom: 14,
                                     ),
-                                    zoom: 14,
+                                    markers: _selectedMarker != null
+                                        ? {_selectedMarker!}
+                                        : {},
+                                    onTap: (latLng) {
+                                      setState(() {
+                                        _selectedMarker = Marker(
+                                          markerId:
+                                              const MarkerId('selected_location'),
+                                          position: latLng,
+                                        );
+                                      });
+                                    },
                                   ),
-                                  markers: _selectedMarker != null
-                                      ? {_selectedMarker!}
-                                      : {},
-                                  onTap: (latLng) {
-                                    setState(() {
-                                      _selectedMarker = Marker(
-                                        markerId:
-                                            const MarkerId('selected_location'),
-                                        position: latLng,
-                                      );
-                                    });
-                                  },
-                                )
+                              )
                               : const Center(
                                   child: Text('No location selected'),
                                 ),
