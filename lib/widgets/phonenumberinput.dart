@@ -11,8 +11,8 @@ class PhoneNumberInput extends StatefulWidget {
 }
 
 class _PhoneNumberInputState extends State<PhoneNumberInput> {
-  String initialCountry = 'US';
-  PhoneNumber number = PhoneNumber(isoCode: 'US');
+  String initialCountry = 'KE';
+  PhoneNumber number = PhoneNumber(isoCode: 'KE');
 
   @override
   Widget build(BuildContext context) {

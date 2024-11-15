@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LikortCheckoutScreen extends StatefulWidget {
   const LikortCheckoutScreen({super.key});
@@ -8,6 +9,7 @@ class LikortCheckoutScreen extends StatefulWidget {
 }
 
 class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
+  late GoogleMapController _controller;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +40,15 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                 height: 100,
               ),
             ),
+            GoogleMap(
+              initialCameraPosition: const CameraPosition(
+                target: LatLng(37.427961, -122.085034),
+                zoom: 11.0,
+              ),
+              onMapCreated: (GoogleMapController controller) {
+                _controller = controller;
+              },
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
@@ -55,7 +66,6 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
             const Text('pay total'),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
               children: [
                 ElevatedButton(
                   onPressed: () {

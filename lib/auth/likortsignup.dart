@@ -12,7 +12,7 @@ class LikortSignup extends StatefulWidget {
 
 class _LikortSignupState extends State<LikortSignup> {
   final _formKey = GlobalKey<FormState>();
-  String _name = '';
+  final String _name = '';
   String _phoneNumber = '';
 
   void _onPhoneNumberChanged(String phoneNumber) {
