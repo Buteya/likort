@@ -179,34 +179,41 @@ class _LikortSignupState extends State<LikortSignup> {
                         child: const Text('Location'),
                       ),
                     ),
-                    Expanded(
-                      child: _currentPosition != null
-                          ? GoogleMap(
-                              onMapCreated: (controller) {
-                                _mapController = controller;
-                              },
-                              initialCameraPosition: CameraPosition(
-                                target: LatLng(
-                                  _currentPosition!.latitude,
-                                  _currentPosition!.longitude,
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SizedBox(
+                        height: _selectedMarker == null ? 0 : MediaQuery.of(context).size.height * .4,
+                        child: Expanded(
+                          child: _currentPosition != null
+                              ? GoogleMap(
+                                  onMapCreated: (controller) {
+                                    _mapController = controller;
+                                  },
+                                  initialCameraPosition: CameraPosition(
+                                    target: LatLng(
+                                      _currentPosition!.latitude,
+                                      _currentPosition!.longitude,
+                                    ),
+                                    zoom: 14,
+                                  ),
+                                  markers: _selectedMarker != null
+                                      ? {_selectedMarker!}
+                                      : {},
+                                  onTap: (latLng) {
+                                    setState(() {
+                                      _selectedMarker = Marker(
+                                        markerId:
+                                            const MarkerId('selected_location'),
+                                        position: latLng,
+                                      );
+                                    });
+                                  },
+                                )
+                              : const Center(
+                                  child: Text('No location selected'),
                                 ),
-                                zoom: 14,
-                              ),
-                              markers: _selectedMarker != null
-                                  ? {_selectedMarker!}
-                                  : {},
-                              onTap: (latLng) {
-                                setState(() {
-                                  _selectedMarker = Marker(
-                                    markerId: const MarkerId('selected_location'),
-                                    position: latLng,
-                                  );
-                                });
-                              },
-                            )
-                          : const Center(
-                              child: Text('No location selected'),
-                            ),
+                        ),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -221,6 +228,8 @@ class _LikortSignupState extends State<LikortSignup> {
                         child: const Icon(Icons.check),
                       ),
                     ),
+                    Text(_selectedMarker?.position.latitude as String),
+                    Text(_selectedMarker?.position.longitude as String),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
@@ -235,7 +244,8 @@ class _LikortSignupState extends State<LikortSignup> {
                           Navigator.of(context)
                               .pushReplacementNamed('/likortlogin');
                         },
-                        child: const Text('are you already signed up? login!!!'),
+                        child:
+                            const Text('are you already signed up? login!!!'),
                       ),
                     ),
                   ],
