@@ -181,11 +181,13 @@ class _LikortSignupState extends State<LikortSignup> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Expanded(
-                        child: _currentPosition != null
-                            ? SizedBox(
-                                height: MediaQuery.of(context).size.height * .4,
-                                child: GoogleMap(
+                      child: SizedBox(
+                        height: _selectedMarker == null
+                            ? 0
+                            : MediaQuery.of(context).size.height * .4,
+                        child:
+                           _currentPosition != null
+                              ? GoogleMap(
                                   onMapCreated: (controller) {
                                     _mapController = controller;
                                   },
@@ -208,11 +210,11 @@ class _LikortSignupState extends State<LikortSignup> {
                                       );
                                     });
                                   },
+                                )
+                              : const Center(
+                                  child: Text('No location selected'),
                                 ),
-                              )
-                            : const Center(
-                                child: Text('No location selected'),
-                              ),
+
                       ),
                     ),
                     Padding(
@@ -228,12 +230,8 @@ class _LikortSignupState extends State<LikortSignup> {
                         child: const Icon(Icons.check),
                       ),
                     ),
-                    Text(_selectedMarker != null
-                        ? _selectedMarker!.position.latitude.toString()
-                        : ''),
-                    Text(_selectedMarker != null
-                        ? _selectedMarker!.position.longitude.toString()
-                        : ''),
+                    Text(_selectedMarker != null?_selectedMarker!.position.latitude.toString():''),
+                    Text(_selectedMarker != null?_selectedMarker!.position.longitude.toString():''),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
