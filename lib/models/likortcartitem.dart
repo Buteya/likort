@@ -15,12 +15,14 @@ class CartItem extends ChangeNotifier{
 
   void incrementQuantity() {
     quantity++;
+    notifyListeners();
   }
 
   void decrementQuantity() {
     if (quantity > 1) {
       quantity--;
     }
+    notifyListeners();
   }
 
   double getTotalPrice() {

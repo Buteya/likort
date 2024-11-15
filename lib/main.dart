@@ -152,9 +152,21 @@ class _MyAppState extends State<MyApp> {
         hintColor: Colors.amber,
         scaffoldBackgroundColor: Colors.grey[100],
         textTheme: TextTheme(
-          headlineLarge:
-              GoogleFonts.lobster(fontSize: 36, fontWeight: FontWeight.bold),
-          bodyLarge: GoogleFonts.openSans(fontSize: 16),
+          displayLarge: GoogleFonts.lobster(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+          ),
+          headlineSmall: GoogleFonts.openSans(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+          ),
+          bodyLarge: GoogleFonts.openSans(
+            fontSize: 16,
+          ),
+          bodySmall: GoogleFonts.openSans(
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
         ),
         buttonTheme: const ButtonThemeData(
           buttonColor: Colors.blue,

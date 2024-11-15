@@ -26,7 +26,10 @@ class _PhoneNumberInputState extends State<PhoneNumberInput> {
       ),
       ignoreBlank: false,
       autoValidateMode: AutovalidateMode.disabled,
-      selectorTextStyle: const TextStyle(color: Colors.black),
+      selectorTextStyle:
+          MediaQuery.of(context).platformBrightness == Brightness.dark
+              ? TextStyle(color: Colors.white60)
+              : TextStyle(color: Colors.black),
       textFieldController: TextEditingController(),
       formatInput: false,
       maxLength: 15,

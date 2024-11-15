@@ -35,10 +35,12 @@ class Store extends ChangeNotifier{
 
   void addProduct(Product product) {
     products.add(product);
+    notifyListeners();
   }
 
   void removeProduct(String productId) {
     products.removeWhere((product) => product.id == productId);
+    notifyListeners();
   }
 
   @override
