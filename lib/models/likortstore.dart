@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
+
 import 'likortartproduct.dart';
 
-class Store {
+class Store extends ChangeNotifier{
   final String id;
   final String name;
   final String description;

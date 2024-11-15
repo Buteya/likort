@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
+
 import 'likortartproduct.dart';
 
-class CartItem {
+class CartItem extends ChangeNotifier{
   final String id;
   final Product product;
   int quantity;

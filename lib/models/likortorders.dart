@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
+
 import 'likortcartitem.dart';
 
-class Order {
+class Order extends ChangeNotifier{
   final String id;
   final List<CartItem> items;
   final DateTime orderDate;

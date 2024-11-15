@@ -9,7 +9,7 @@ class LikortCheckoutScreen extends StatefulWidget {
 }
 
 class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
-  late GoogleMapController _controller;
+   GoogleMapController? _controller;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
