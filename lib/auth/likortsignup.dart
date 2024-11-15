@@ -182,7 +182,9 @@ class _LikortSignupState extends State<LikortSignup> {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: SizedBox(
-                        height: _selectedMarker == null ? 0 : MediaQuery.of(context).size.height * .4,
+                        height: _selectedMarker == null
+                            ? 0
+                            : MediaQuery.of(context).size.height * .4,
                         child: Expanded(
                           child: _currentPosition != null
                               ? GoogleMap(
@@ -228,8 +230,8 @@ class _LikortSignupState extends State<LikortSignup> {
                         child: const Icon(Icons.check),
                       ),
                     ),
-                    Text(_selectedMarker?.position.latitude as String),
-                    Text(_selectedMarker?.position.longitude as String),
+                    Text(_selectedMarker != null?_selectedMarker!.position.latitude.toString():''),
+                    Text(_selectedMarker != null?_selectedMarker!.position.longitude.toString():''),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
