@@ -19,11 +19,12 @@ class _LikortSignupState extends State<LikortSignup> {
   String _phoneNumber = '';
   Position? _currentPosition;
   GoogleMapController? _mapController;
+  Marker? _selectedMarker;
 
-  //signup functions
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
+    // Check if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return Future.error('Location services are disabled.');
@@ -38,8 +39,24 @@ class _LikortSignupState extends State<LikortSignup> {
     if (permission == LocationPermission.deniedForever) {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
-    }
+    } // Permissions are granted, get the position.
     return await Geolocator.getCurrentPosition();
+  }
+
+  Future<void> _getUserLocation() async {
+    Position position = await _determinePosition();
+    setState(() {
+      _currentPosition = position;
+      _selectedMarker = Marker(
+        markerId: const MarkerId('current_location'),
+        position: LatLng(position.latitude, position.longitude),
+      );
+    });
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLng(
+        LatLng(position.latitude, position.longitude),
+      ),
+    );
   }
 
   void _onPhoneNumberChanged(String phoneNumber) {
@@ -68,9 +85,6 @@ class _LikortSignupState extends State<LikortSignup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Likort Signup'),
-      ),
       body: LayoutBuilder(builder: (context, constraints) {
         return SingleChildScrollView(
           child: Form(
@@ -158,19 +172,12 @@ class _LikortSignupState extends State<LikortSignup> {
                       child: PhoneNumberInput(
                           onPhoneNumberChanged: _onPhoneNumberChanged),
                     ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        Position position = await _determinePosition();
-                        setState(() {
-                          _currentPosition = position;
-                        });
-                        _mapController?.animateCamera(
-                          CameraUpdate.newLatLng(
-                            LatLng(position.latitude, position.longitude),
-                          ),
-                        );
-                      },
-                      child: const Text('Get Current Location'),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ElevatedButton(
+                        onPressed: _getUserLocation,
+                        child: const Text('Location'),
+                      ),
                     ),
                     Expanded(
                       child: _currentPosition != null
@@ -185,30 +192,51 @@ class _LikortSignupState extends State<LikortSignup> {
                                 ),
                                 zoom: 14,
                               ),
-                              markers: {
-                                Marker(
-                                  markerId: const MarkerId('current_location'),
-                                  position: LatLng(
-                                    _currentPosition!.latitude,
-                                    _currentPosition!.longitude,
-                                  ),
-                                ),
+                              markers: _selectedMarker != null
+                                  ? {_selectedMarker!}
+                                  : {},
+                              onTap: (latLng) {
+                                setState(() {
+                                  _selectedMarker = Marker(
+                                    markerId: const MarkerId('selected_location'),
+                                    position: latLng,
+                                  );
+                                });
                               },
                             )
                           : const Center(
                               child: Text('No location selected'),
                             ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: const Text('Signup'),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ElevatedButton(
+                        onPressed: _selectedMarker != null
+                            ? () {
+                                // Send selected location for delivery
+                                print(
+                                    'Selected location: ${_selectedMarker!.position}');
+                              }
+                            : null,
+                        child: const Icon(Icons.check),
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context)
-                            .pushReplacementNamed('/likortlogin');
-                      },
-                      child: const Text('already signed up? login!!!'),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Signup'),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 48.0),
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushReplacementNamed('/likortlogin');
+                        },
+                        child: const Text('are you already signed up? login!!!'),
+                      ),
                     ),
                   ],
                 ),
