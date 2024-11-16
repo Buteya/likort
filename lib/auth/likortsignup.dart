@@ -35,7 +35,6 @@ class _LikortSignupState extends State<LikortSignup> {
   bool _showHint = true;
   bool _selected = true;
 
-
   //disposing off the text editing controllers
   @override
   void dispose() {
@@ -47,7 +46,6 @@ class _LikortSignupState extends State<LikortSignup> {
     _phoneController.dispose();
     super.dispose();
   }
-
 
   //function to determine the user position
   Future<Position> _determinePosition() async {
@@ -71,7 +69,6 @@ class _LikortSignupState extends State<LikortSignup> {
     } // Permissions are granted, get the position.
     return await Geolocator.getCurrentPosition();
   }
-
 
   //function to get user location
   Future<void> _getUserLocation() async {
@@ -106,27 +103,27 @@ class _LikortSignupState extends State<LikortSignup> {
     final id = uuid.v4();
 
     //storing user in shared preferences
-      do {
-        await prefs.setString('id', id);
-        await prefs.setString('firstname', _firstnameController.text);
-        await prefs.setString('lastname', _lastnameController.text);
-        await prefs.setString('email', _emailController.text);
-        await prefs.setString('password', encodedPassword);
-        await prefs.setString('phone', '$_phoneNumber');
-        await prefs.setString('usertype', users.usertype);
-        await prefs.setString(
-            'latitude', '${_selectedMarker!.position.latitude}');
-        await prefs.setString(
-            'longitude', '${_selectedMarker!.position.longitude}');
-        await prefs.setString(
-            'current location time', '${_currentPosition!.timestamp}');
-        await prefs.setString(
-            'current location latitude', '${_currentPosition!.latitude}');
-        await prefs.setString(
-            'current location longitude', '${_currentPosition!.longitude}');
-      } while (prefs.getString('id')!.isEmpty);
+    do {
+      await prefs.setString('id', id);
+      await prefs.setString('firstname', _firstnameController.text);
+      await prefs.setString('lastname', _lastnameController.text);
+      await prefs.setString('email', _emailController.text);
+      await prefs.setString('password', encodedPassword);
+      await prefs.setString('phone', '$_phoneNumber');
+      await prefs.setString('usertype', users.usertype);
+      await prefs.setString(
+          'latitude', '${_selectedMarker!.position.latitude}');
+      await prefs.setString(
+          'longitude', '${_selectedMarker!.position.longitude}');
+      await prefs.setString(
+          'current location time', '${_currentPosition!.timestamp}');
+      await prefs.setString(
+          'current location latitude', '${_currentPosition!.latitude}');
+      await prefs.setString(
+          'current location longitude', '${_currentPosition!.longitude}');
+    } while (prefs.getString('id')!.isEmpty);
 
-      //validating input then saving and finally if the user exists
+    //validating input then saving and finally if the user exists
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
       if (users.users.isNotEmpty &&
@@ -252,6 +249,9 @@ class _LikortSignupState extends State<LikortSignup> {
 
   @override
   Widget build(BuildContext context) {
+    final bool _isDark = MediaQuery.of(context)
+        .platformBrightness ==
+        Brightness.dark;
     return _isLoading
         ? const Center(
             child: CircularProgressIndicator(),
@@ -359,11 +359,10 @@ class _LikortSignupState extends State<LikortSignup> {
                                   }
                                   return null;
                                 },
-                                selectorTextStyle:
-                                    MediaQuery.of(context).platformBrightness ==
-                                            Brightness.dark
-                                        ? const TextStyle(color: Colors.white60)
-                                        : const TextStyle(color: Colors.black),
+                                selectorTextStyle: TextStyle(
+                                    color: _isDark
+                                        ? Colors.white60
+                                        : Colors.black,),
                                 selectorConfig: const SelectorConfig(
                                   selectorType:
                                       PhoneInputSelectorType.BOTTOM_SHEET,
@@ -395,6 +394,7 @@ class _LikortSignupState extends State<LikortSignup> {
                             Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: Container(
+                                margin: const EdgeInsets.all(16.0),
                                 padding: const EdgeInsets.all(16.0),
                                 color: _selectedMarker == null
                                     ? Colors.transparent
