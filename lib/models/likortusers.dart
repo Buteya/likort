@@ -1,6 +1,8 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
-class User extends ChangeNotifier{
+class User extends ChangeNotifier {
   final String id;
   final String firstname;
   final String lastname;
@@ -10,6 +12,10 @@ class User extends ChangeNotifier{
   final String usertype;
   final double latitude;
   final double longitude;
+
+  final List<User> _users = [];
+
+  UnmodifiableListView<User> get users => UnmodifiableListView(_users);
 
   User({
     required this.id,
@@ -43,11 +49,43 @@ class User extends ChangeNotifier{
       'firstname': firstname,
       'lastname': lastname,
       'email': email,
-      'password':password,
-      'phone':phone,
-      'usertype':usertype,
+      'password': password,
+      'phone': phone,
+      'usertype': usertype,
       'latitude': latitude,
       'longitude': longitude,
     };
+  }
+
+  void add(User user) {
+    _users.add(user);
+    // This call tells the widgets that are listening to this model to rebuild.
+    notifyListeners();
+  }
+
+  void removeUser(int index) {
+    _users.removeAt(index);
+    notifyListeners();
+  }
+
+  void updateUser(User updatedUser) {
+    _users[_users.length - 1] = updatedUser;
+    notifyListeners();
+  }
+
+  void updateSingleUser(User updatedUser, int index) {
+    _users[index] = updatedUser;
+    notifyListeners();
+  }
+
+  void removeAll() {
+    _users.clear();
+    // This call tells the widgets that are listening to this model to rebuild.
+    notifyListeners();
+  }
+
+  @override
+  String toString() {
+    return 'User(id: $id, firstname: $firstname,lastname: $lastname, email: $email, password: $password,phone: $phone,usertype: $usertype,latitude: $latitude,longitude: $longitude,)';
   }
 }
