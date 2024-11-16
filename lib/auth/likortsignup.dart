@@ -393,12 +393,7 @@ class _LikortSignupState extends State<LikortSignup> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(16.0),
-                              child: Container(
-                                margin: const EdgeInsets.all(16.0),
-                                padding: const EdgeInsets.all(16.0),
-                                color: _selectedMarker == null
-                                    ? Colors.transparent
-                                    : Colors.white60,
+                              child: SizedBox(
                                 height: _selectedMarker == null
                                     ? 0
                                     : MediaQuery.of(context).size.height * .4,
