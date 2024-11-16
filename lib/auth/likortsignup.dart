@@ -249,7 +249,7 @@ class _LikortSignupState extends State<LikortSignup> {
 
   @override
   Widget build(BuildContext context) {
-    final bool _isDark = MediaQuery.of(context)
+    final bool isDark = MediaQuery.of(context)
         .platformBrightness ==
         Brightness.dark;
     return _isLoading
@@ -360,7 +360,7 @@ class _LikortSignupState extends State<LikortSignup> {
                                   return null;
                                 },
                                 selectorTextStyle: TextStyle(
-                                    color: _isDark
+                                    color: isDark
                                         ? Colors.white60
                                         : Colors.black,),
                                 selectorConfig: const SelectorConfig(
@@ -396,70 +396,88 @@ class _LikortSignupState extends State<LikortSignup> {
                               child: SizedBox(
                                 height: _selectedMarker == null
                                     ? 0
-                                    : MediaQuery.of(context).size.height * .4,
+                                    : MediaQuery.of(context).size.height * .58,
                                 child: _currentPosition != null
                                     ? Column(
+                                  mainAxisSize: MainAxisSize.min,
                                         children: [
                                           if (_showHint)
-                                            Text(
-                                              'The marker on the map show\'s the current location.',
-                                              style: TextStyle(
-                                                color: MediaQuery.of(context)
-                                                            .platformBrightness ==
-                                                        Brightness.dark
-                                                    ? Colors.white60
-                                                    : Colors.black,
+                                            Container(
+                                              margin: const EdgeInsets.symmetric(vertical: 4.0),
+                                              padding: const EdgeInsets.all(4.0),
+                                              color: Colors.black12,
+                                              child: Text(
+                                                'The marker on the map show\'s the current location.',
+                                                style: TextStyle(
+                                                  color: MediaQuery.of(context)
+                                                              .platformBrightness ==
+                                                          Brightness.dark
+                                                      ? Colors.white60
+                                                      : Colors.black,
+                                                ),
                                               ),
                                             ),
                                           if (_showHint)
-                                            Text(
-                                              'If the current location is your delivery location.',
-                                              style: TextStyle(
-                                                color: MediaQuery.of(context)
-                                                            .platformBrightness ==
-                                                        Brightness.dark
-                                                    ? Colors.white60
-                                                    : Colors.black,
+                                            Container(
+                                              margin: const EdgeInsets.symmetric(vertical: 4.0),
+                                              padding: const EdgeInsets.all(4.0),
+                                              color: Colors.black12,
+                                              child: Text(
+                                                'If the current location is your delivery location.',
+                                                style: TextStyle(
+                                                  color: MediaQuery.of(context)
+                                                              .platformBrightness ==
+                                                          Brightness.dark
+                                                      ? Colors.white60
+                                                      : Colors.black,
+                                                ),
                                               ),
                                             ),
                                           if (_showHint)
-                                            Text(
-                                              'Press the button below to set it as your delivery location.',
-                                              style: TextStyle(
-                                                color: MediaQuery.of(context)
-                                                            .platformBrightness ==
-                                                        Brightness.dark
-                                                    ? Colors.white60
-                                                    : Colors.black,
+                                            Container(
+                                              margin: const EdgeInsets.symmetric(vertical: 4.0),
+                                              padding: const EdgeInsets.all(4.0),
+                                              color: Colors.black12,
+                                              child: Text(
+                                                'Press the button below to set it as your delivery location.',
+                                                style: TextStyle(
+                                                  color: MediaQuery.of(context)
+                                                              .platformBrightness ==
+                                                          Brightness.dark
+                                                      ? Colors.white60
+                                                      : Colors.black,
+                                                ),
                                               ),
                                             ),
                                           const SizedBox(
                                             height: 20,
                                           ),
-                                          GoogleMap(
-                                            onMapCreated: (controller) {
-                                              _mapController = controller;
-                                            },
-                                            initialCameraPosition:
-                                                CameraPosition(
-                                              target: LatLng(
-                                                _currentPosition!.latitude,
-                                                _currentPosition!.longitude,
+                                          SizedBox(height: MediaQuery.of(context).size.height * 0.4,
+                                            child: GoogleMap(
+                                              onMapCreated: (controller) {
+                                                _mapController = controller;
+                                              },
+                                              initialCameraPosition:
+                                                  CameraPosition(
+                                                target: LatLng(
+                                                  _currentPosition!.latitude,
+                                                  _currentPosition!.longitude,
+                                                ),
+                                                zoom: 14,
                                               ),
-                                              zoom: 14,
+                                              markers: _selectedMarker != null
+                                                  ? {_selectedMarker!}
+                                                  : {},
+                                              onTap: (latLng) {
+                                                setState(() {
+                                                  _selectedMarker = Marker(
+                                                    markerId: const MarkerId(
+                                                        'selected_location'),
+                                                    position: latLng,
+                                                  );
+                                                });
+                                              },
                                             ),
-                                            markers: _selectedMarker != null
-                                                ? {_selectedMarker!}
-                                                : {},
-                                            onTap: (latLng) {
-                                              setState(() {
-                                                _selectedMarker = Marker(
-                                                  markerId: const MarkerId(
-                                                      'selected_location'),
-                                                  position: latLng,
-                                                );
-                                              });
-                                            },
                                           ),
                                         ],
                                       )
