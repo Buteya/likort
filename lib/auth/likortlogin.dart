@@ -16,6 +16,7 @@ class LikortLogin extends StatefulWidget {
 class _LikortLoginState extends State<LikortLogin> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   Future<void> _login(String email, String password) async {
     User? users = Provider.of<User>(context, listen: false);
@@ -59,7 +60,7 @@ class _LikortLoginState extends State<LikortLogin> {
           // Show the second SnackBar after the first one is closed
           scaffoldMessenger.showSnackBar(
             const SnackBar(
-              content: Text('Check email or password!!!'),
+              content: Text('user does not exist!!!'),
               duration: Duration(seconds: 2),
             ),
           );
@@ -86,6 +87,7 @@ class _LikortLoginState extends State<LikortLogin> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Form(
+        key: _formKey,
         child: Column(
           children: [
             Padding(
@@ -137,7 +139,11 @@ class _LikortLoginState extends State<LikortLogin> {
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: () {
-                  _login(_emailController.text, _passwordController.text);
+                  if (_formKey.currentState!.validate()) {
+                    _login(_emailController.text, _passwordController.text);
+                    _emailController.clear();
+                    _passwordController.clear();
+                  }
                 },
                 child: const Text('login'),
               ),
@@ -146,7 +152,8 @@ class _LikortLoginState extends State<LikortLogin> {
               padding: const EdgeInsets.all(16.0),
               child: TextButton(
                 onPressed: () {
-                  Navigator.of(context).pushReplacementNamed('/likortforgotpassword');
+                  Navigator.of(context)
+                      .pushReplacementNamed('/likortforgotpassword');
                 },
                 child: const Text('forgot password?'),
               ),

@@ -57,6 +57,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                   Navigator.of(context).pushNamed('/likortproductdetail');
                 },
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.network(
                       'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
@@ -65,10 +67,22 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                           ? screenSize.height * 0.1
                           : screenSize.height * 0.36,
                     ),
-                    const Text('Steve`s store'),
-                    const Text('painting'),
-                    const Text('brushes'),
-                    const Text('\$1200'),
+                    const SizedBox(height: 7.0),
+                    const Text('title',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('\$price',
+                        style: TextStyle(fontSize: 16, color: Colors.green)),
+                    const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.star, color: Colors.orange, size: 20),
+                        Text('rating (reviewCount reviews)'),
+                      ],
+                    ),
+                    const SizedBox(height: 5.0),
+                    const Text('description')
                   ],
                 ),
               );

@@ -434,11 +434,13 @@ class _LikortSignupState extends State<LikortSignup> {
                                                       vertical: 4.0),
                                               color: Colors.black12,
                                               child: Padding(
-                                                padding: const EdgeInsets.all(4.0),
+                                                padding:
+                                                    const EdgeInsets.all(4.0),
                                                 child: Text(
                                                   'The marker on the map show\'s the current location.',
                                                   style: TextStyle(
-                                                    color: MediaQuery.of(context)
+                                                    color: MediaQuery.of(
+                                                                    context)
                                                                 .platformBrightness ==
                                                             Brightness.dark
                                                         ? Colors.white60
@@ -454,11 +456,13 @@ class _LikortSignupState extends State<LikortSignup> {
                                                       vertical: 4.0),
                                               color: Colors.black12,
                                               child: Padding(
-                                                padding: const EdgeInsets.all(4.0),
+                                                padding:
+                                                    const EdgeInsets.all(4.0),
                                                 child: Text(
                                                   'If the current location is your delivery location.',
                                                   style: TextStyle(
-                                                    color: MediaQuery.of(context)
+                                                    color: MediaQuery.of(
+                                                                    context)
                                                                 .platformBrightness ==
                                                             Brightness.dark
                                                         ? Colors.white60
@@ -474,11 +478,13 @@ class _LikortSignupState extends State<LikortSignup> {
                                                       vertical: 4.0),
                                               color: Colors.black12,
                                               child: Padding(
-                                                padding: const EdgeInsets.all(4.0),
+                                                padding:
+                                                    const EdgeInsets.all(4.0),
                                                 child: Text(
                                                   'Press the button below to set it as your delivery location.',
                                                   style: TextStyle(
-                                                    color: MediaQuery.of(context)
+                                                    color: MediaQuery.of(
+                                                                    context)
                                                                 .platformBrightness ==
                                                             Brightness.dark
                                                         ? Colors.white60
@@ -604,6 +610,9 @@ class _LikortSignupState extends State<LikortSignup> {
                                 child: const Text(
                                     'are you already signed up? login!!!'),
                               ),
+                            ),
+                            const SizedBox(
+                              height: 130,
                             ),
                           ],
                         ),
