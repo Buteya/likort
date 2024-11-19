@@ -103,25 +103,34 @@ class _LikortSignupState extends State<LikortSignup> {
     final id = uuid.v4();
 
     //storing user in shared preferences
-    do {
-      await prefs.setString('id', id);
-      await prefs.setString('firstname', _firstnameController.text);
-      await prefs.setString('lastname', _lastnameController.text);
-      await prefs.setString('email', _emailController.text);
-      await prefs.setString('password', encodedPassword);
-      await prefs.setString('phone', '$_phoneNumber');
-      await prefs.setString('usertype', users.usertype);
-      await prefs.setString(
-          'latitude', '${_selectedMarker!.position.latitude}');
-      await prefs.setString(
-          'longitude', '${_selectedMarker!.position.longitude}');
-      await prefs.setString(
-          'current location time', '${_currentPosition!.timestamp}');
-      await prefs.setString(
-          'current location latitude', '${_currentPosition!.latitude}');
-      await prefs.setString(
-          'current location longitude', '${_currentPosition!.longitude}');
-    } while (prefs.getString('id')!.isEmpty);
+    try {
+      do {
+        await prefs.setString('id', id);
+        await prefs.setString('firstname', _firstnameController.text);
+        await prefs.setString('lastname', _lastnameController.text);
+        await prefs.setString('email', _emailController.text);
+        await prefs.setString('password', encodedPassword);
+        await prefs.setString('phone', '$_phoneNumber');
+        await prefs.setString('usertype', users.usertype);
+        await prefs.setString(
+            'latitude', '${_selectedMarker!.position.latitude}');
+        await prefs.setString(
+            'longitude', '${_selectedMarker!.position.longitude}');
+        await prefs.setString(
+            'current location time', '${_currentPosition!.timestamp}');
+        await prefs.setString(
+            'current location latitude', '${_currentPosition!.latitude}');
+        await prefs.setString(
+            'current location longitude', '${_currentPosition!.longitude}');
+      } while (prefs.getString('id')!.isEmpty);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$e'),
+        ),
+      );
+      print('Error: $e');
+    }
 
     //validating input then saving and finally if the user exists
     if (_formKey.currentState?.validate() ?? false) {
@@ -130,16 +139,25 @@ class _LikortSignupState extends State<LikortSignup> {
           (users.users.last.email != _emailController.text &&
               users.users.last.password != _passwordController.text)) {
         if (_selectedMarker != null) {
-          users.add(User(
-            id: id,
-            firstname: _firstnameController.text,
-            lastname: _lastnameController.text,
-            email: _emailController.text,
-            password: encodedPassword,
-            phone: _phoneNumber.phoneNumber.toString(),
-            latitude: _selectedMarker!.position.latitude,
-            longitude: _selectedMarker!.position.longitude,
-          ));
+          try {
+            users.add(User(
+              id: id,
+              firstname: _firstnameController.text,
+              lastname: _lastnameController.text,
+              email: _emailController.text,
+              password: encodedPassword,
+              phone: _phoneNumber.phoneNumber.toString(),
+              latitude: _selectedMarker!.position.latitude,
+              longitude: _selectedMarker!.position.longitude,
+            ));
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$e'),
+              ),
+            );
+            print('Error: $e');
+          }
           setState(() {
             _selected = true;
           });
@@ -152,16 +170,26 @@ class _LikortSignupState extends State<LikortSignup> {
         }
       } else if (users.users.isEmpty) {
         if (_selectedMarker != null) {
-          users.add(User(
-            id: id,
-            firstname: _firstnameController.text,
-            lastname: _lastnameController.text,
-            email: _emailController.text,
-            password: encodedPassword,
-            phone: _phoneNumber.phoneNumber.toString(),
-            latitude: _selectedMarker!.position.latitude,
-            longitude: _selectedMarker!.position.longitude,
-          ));
+          try {
+            users.add(User(
+              id: id,
+              firstname: _firstnameController.text,
+              lastname: _lastnameController.text,
+              email: _emailController.text,
+              password: encodedPassword,
+              phone: _phoneNumber.phoneNumber.toString(),
+              latitude: _selectedMarker!.position.latitude,
+              longitude: _selectedMarker!.position.longitude,
+            ));
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$e'),
+              ),
+            );
+            print('Error: $e');
+          }
+
           setState(() {
             _selected = true;
           });
@@ -188,7 +216,7 @@ class _LikortSignupState extends State<LikortSignup> {
           // Show the second SnackBar after the first one is closed
           scaffoldMessenger.showSnackBar(
             const SnackBar(
-              content: Text('Login insted!!!'),
+              content: Text('Login instead!!!'),
               duration: Duration(seconds: 2),
             ),
           );
@@ -249,9 +277,7 @@ class _LikortSignupState extends State<LikortSignup> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = MediaQuery.of(context)
-        .platformBrightness ==
-        Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return _isLoading
         ? const Center(
             child: CircularProgressIndicator(),
@@ -360,9 +386,9 @@ class _LikortSignupState extends State<LikortSignup> {
                                   return null;
                                 },
                                 selectorTextStyle: TextStyle(
-                                    color: isDark
-                                        ? Colors.white60
-                                        : Colors.black,),
+                                  color:
+                                      isDark ? Colors.white54 : Colors.black54,
+                                ), // Change hint color based on theme
                                 selectorConfig: const SelectorConfig(
                                   selectorType:
                                       PhoneInputSelectorType.BOTTOM_SHEET,
@@ -382,7 +408,7 @@ class _LikortSignupState extends State<LikortSignup> {
                                 onPressed: () {
                                   _getUserLocation();
                                   // Set a timer to hide the hint text after a few seconds
-                                  Timer(const Duration(seconds: 7), () {
+                                  Timer(const Duration(seconds: 15), () {
                                     setState(() {
                                       _showHint = false;
                                     });
@@ -396,63 +422,79 @@ class _LikortSignupState extends State<LikortSignup> {
                               child: SizedBox(
                                 height: _selectedMarker == null
                                     ? 0
-                                    : MediaQuery.of(context).size.height * .58,
+                                    : MediaQuery.of(context).size.height * .59,
                                 child: _currentPosition != null
                                     ? Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           if (_showHint)
-                                            Container(
-                                              margin: const EdgeInsets.symmetric(vertical: 4.0),
-                                              padding: const EdgeInsets.all(4.0),
+                                            Card(
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0),
                                               color: Colors.black12,
-                                              child: Text(
-                                                'The marker on the map show\'s the current location.',
-                                                style: TextStyle(
-                                                  color: MediaQuery.of(context)
-                                                              .platformBrightness ==
-                                                          Brightness.dark
-                                                      ? Colors.white60
-                                                      : Colors.black,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(4.0),
+                                                child: Text(
+                                                  'The marker on the map show\'s the current location.',
+                                                  style: TextStyle(
+                                                    color: MediaQuery.of(context)
+                                                                .platformBrightness ==
+                                                            Brightness.dark
+                                                        ? Colors.white60
+                                                        : Colors.black,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           if (_showHint)
-                                            Container(
-                                              margin: const EdgeInsets.symmetric(vertical: 4.0),
-                                              padding: const EdgeInsets.all(4.0),
+                                            Card(
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0),
                                               color: Colors.black12,
-                                              child: Text(
-                                                'If the current location is your delivery location.',
-                                                style: TextStyle(
-                                                  color: MediaQuery.of(context)
-                                                              .platformBrightness ==
-                                                          Brightness.dark
-                                                      ? Colors.white60
-                                                      : Colors.black,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(4.0),
+                                                child: Text(
+                                                  'If the current location is your delivery location.',
+                                                  style: TextStyle(
+                                                    color: MediaQuery.of(context)
+                                                                .platformBrightness ==
+                                                            Brightness.dark
+                                                        ? Colors.white60
+                                                        : Colors.black,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           if (_showHint)
-                                            Container(
-                                              margin: const EdgeInsets.symmetric(vertical: 4.0),
-                                              padding: const EdgeInsets.all(4.0),
+                                            Card(
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4.0),
                                               color: Colors.black12,
-                                              child: Text(
-                                                'Press the button below to set it as your delivery location.',
-                                                style: TextStyle(
-                                                  color: MediaQuery.of(context)
-                                                              .platformBrightness ==
-                                                          Brightness.dark
-                                                      ? Colors.white60
-                                                      : Colors.black,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(4.0),
+                                                child: Text(
+                                                  'Press the button below to set it as your delivery location.',
+                                                  style: TextStyle(
+                                                    color: MediaQuery.of(context)
+                                                                .platformBrightness ==
+                                                            Brightness.dark
+                                                        ? Colors.white60
+                                                        : Colors.black,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           const SizedBox(
                                             height: 20,
                                           ),
-                                          SizedBox(height: MediaQuery.of(context).size.height * 0.4,
+                                          SizedBox(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.4,
                                             child: GoogleMap(
                                               onMapCreated: (controller) {
                                                 _mapController = controller;

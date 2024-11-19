@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:likort/auth/likortcreateartproduct.dart';
@@ -14,14 +15,22 @@ import 'package:likort/models/likortusers.dart';
 import 'package:likort/screens/likortcartscreen.dart';
 import 'package:likort/screens/likortcheckoutscreen.dart';
 import 'package:likort/screens/likortcompletedorder.dart';
+import 'package:likort/screens/likortforgotpasswordscreen.dart';
 import 'package:likort/screens/likorthomescreen.dart';
 import 'package:likort/screens/likortpaycash.dart';
 import 'package:likort/screens/likortproductdetailscreen.dart';
+import 'package:likort/screens/likortsplashscreen.dart';
 import 'package:likort/screens/likorttrackorder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     MultiProvider(
       providers: [
@@ -175,9 +184,9 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
         useMaterial3: true,
       ),
-      initialRoute: '/likortlogin',
+      initialRoute: '/likortsplashscreen',
       routes: {
-        '/': (context) => LikortHomeScreen(
+        '/likorthomescreen': (context) => LikortHomeScreen(
               title: 'Likort',
               themeMode: _themeMode,
               toggleThemeMode: _toggleThemeMode,
@@ -195,6 +204,8 @@ class _MyAppState extends State<MyApp> {
         '/likortcreatorprofilestore': (context) =>
             const LikortCreatorProfileStore(),
         '/likortcreateartproduct': (context) => const LikortCreateArtProduct(),
+        '/likortforgotpassword': (context) => const ForgotPasswordScreen(),
+        '/likortsplashscreen':(context) => const LikortSplashScreen(),
       },
     );
   }
