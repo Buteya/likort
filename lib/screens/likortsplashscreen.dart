@@ -35,7 +35,7 @@ class _LikortSplashScreenState extends State<LikortSplashScreen> {
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
                 width: MediaQuery.of(context).size.width*.14,
-                child: LinearProgressIndicator(),
+                child: const LinearProgressIndicator(),
               ),
             ), // Optional loading indicator
           ],
