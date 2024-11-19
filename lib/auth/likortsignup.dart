@@ -569,12 +569,12 @@ class _LikortSignupState extends State<LikortSignup> {
                                     ),
                                   )
                                 : const Text(''),
-                            Text(_selectedMarker != null
-                                ? _selectedMarker!.position.latitude.toString()
-                                : ''),
-                            Text(_selectedMarker != null
-                                ? _selectedMarker!.position.longitude.toString()
-                                : ''),
+                            // Text(_selectedMarker != null
+                            //     ? _selectedMarker!.position.latitude.toString()
+                            //     : ''),
+                            // Text(_selectedMarker != null
+                            //     ? _selectedMarker!.position.longitude.toString()
+                            //     : ''),
                             Padding(
                               padding: const EdgeInsets.all(32.0),
                               child: ElevatedButton(
@@ -595,7 +595,7 @@ class _LikortSignupState extends State<LikortSignup> {
                             ),
                             Padding(
                               padding:
-                                  const EdgeInsets.symmetric(vertical: 48.0),
+                                  const EdgeInsets.symmetric(vertical: 8.0),
                               child: TextButton(
                                 onPressed: () {
                                   Navigator.of(context)

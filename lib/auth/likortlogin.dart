@@ -143,7 +143,7 @@ class _LikortLoginState extends State<LikortLogin> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(16.0),
               child: TextButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/likortforgotpassword');
@@ -152,7 +152,7 @@ class _LikortLoginState extends State<LikortLogin> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(48.0),
+              padding: const EdgeInsets.all(2.0),
               child: TextButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/likortsignup');
