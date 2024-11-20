@@ -19,7 +19,7 @@ class LikortHomeScreen extends StatefulWidget {
 class _LikortHomeScreenState extends State<LikortHomeScreen> {
   final _searchController = TextEditingController();
 
-  List<String> _items = List<String>.generate(100, (index) => 'Item $index');
+  final List<String> _items = List<String>.generate(100, (index) => 'Item $index');
   late List<String> _filteredItems;
   @override
   void initState() {
@@ -46,9 +46,48 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 74,
-        leading: const Icon(
-          Icons.dehaze_rounded,
-          size: 40,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.dehaze_rounded,size: 40,),
+            onPressed: () {
+              showMenu(
+                context: context,
+                position: const RelativeRect.fromLTRB(0, kToolbarHeight, 0, 0),
+                items: [
+                  PopupMenuItem<int>(
+                    value: 0,
+                    child:  Theme(
+                      data: Theme.of(context),
+                      child: IconButton(
+                        icon: Icon(Theme.of(context).brightness == Brightness.light
+                            ? Icons.wb_sunny
+                            : (Theme.of(context).brightness == Brightness.dark
+                            ? Icons.nights_stay
+                            : Icons.brightness_auto)),
+                        onPressed:
+                          widget.toggleThemeMode,
+
+                      ),
+                    ),
+                  ),
+                  const PopupMenuItem<int>(
+                    value: 1,
+                    child: Text("Option 2"),
+                  ),
+                  const PopupMenuItem<int>(
+                    value: 2,
+                    child: Text("Option 3"),
+                  ),
+                ],
+                elevation: 8.0,
+              ).then((value) {
+                if (value != null) {
+                  // Handle menu selection here
+                  print("Selected: $value");
+                }
+              });
+            },
+          ),
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Center(
@@ -71,7 +110,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
           ),
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.notifications)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
           InkWell(
             onTap: () {
               Navigator.of(context).pushNamed('/likortuserprofile');
@@ -111,7 +150,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                       ),
                       filled: true,
                       fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                      prefixIcon: Icon(
+                      prefixIcon: const Icon(
                         Icons.search,
                       ),
                     ),

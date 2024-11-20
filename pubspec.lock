@@ -558,7 +558,7 @@ packages:
     source: hosted
     version: "0.3.3"
   libphonenumber_web:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: libphonenumber_web
       sha256: "8186f420dbe97c3132283e52819daff1e55d60d6db46f7ea5ac42f42a28cc2ef"
