@@ -19,7 +19,8 @@ class LikortHomeScreen extends StatefulWidget {
 class _LikortHomeScreenState extends State<LikortHomeScreen> {
   final _searchController = TextEditingController();
 
-  final List<String> _items = List<String>.generate(100, (index) => 'Item $index');
+  final List<String> _items =
+      List<String>.generate(100, (index) => 'Item $index');
   late List<String> _filteredItems;
   @override
   void initState() {
@@ -48,27 +49,18 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         toolbarHeight: 74,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(Icons.dehaze_rounded,size: 40,),
+            icon: const Icon(
+              Icons.dehaze_rounded,
+              size: 40,
+            ),
             onPressed: () {
               showMenu(
                 context: context,
                 position: const RelativeRect.fromLTRB(0, kToolbarHeight, 0, 0),
                 items: [
-                  PopupMenuItem<int>(
+                  const PopupMenuItem<int>(
                     value: 0,
-                    child:  Theme(
-                      data: Theme.of(context),
-                      child: IconButton(
-                        icon: Icon(Theme.of(context).brightness == Brightness.light
-                            ? Icons.wb_sunny
-                            : (Theme.of(context).brightness == Brightness.dark
-                            ? Icons.nights_stay
-                            : Icons.brightness_auto)),
-                        onPressed:
-                          widget.toggleThemeMode,
-
-                      ),
-                    ),
+                    child: Text("Option 1"),
                   ),
                   const PopupMenuItem<int>(
                     value: 1,
@@ -110,13 +102,6 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
           ),
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
-          InkWell(
-            onTap: () {
-              Navigator.of(context).pushNamed('/likortuserprofile');
-            },
-            child: const CircleAvatar(),
-          ),
           IconButton(
             icon: Icon(widget.themeMode == ThemeMode.light
                 ? Icons.wb_sunny
@@ -125,89 +110,127 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                     : Icons.brightness_auto)),
             onPressed: widget.toggleThemeMode,
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: PreferredSize(
-                preferredSize: const Size.fromHeight(48.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.white54 : Colors.black54,
-                      ),
-                      hintText: 'Search...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                      prefixIcon: const Icon(
-                        Icons.search,
-                      ),
-                    ),
-                    onChanged: (query) {
-                      _filterItems(query);
-                    },
-                  ),
+          IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.notifications,
+              )),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).pushNamed('/likortuserprofile');
+              },
+              child: const CircleAvatar(
+                child: Icon(
+                  Icons.person,
                 ),
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                  itemCount: 100,
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.of(context).pushNamed('/likortproductdetail');
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+          child: Column(
+            children: [
+              Text(
+                'Discover the world\'s finest art',
+                style: GoogleFonts.openSans(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 27.0),
+                child: Text(
+                  'Explore works from the most talented artists showcasing their most finest works',
+                  style: GoogleFonts.openSans(
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: PreferredSize(
+                  preferredSize: const Size.fromHeight(48.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintStyle: TextStyle(
+                          color: isDark ? Colors.white54 : Colors.black54,
+                        ),
+                        hintText: 'Search...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                        prefixIcon: const Icon(
+                          Icons.search,
+                        ),
+                      ),
+                      onChanged: (query) {
+                        _filterItems(query);
                       },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15.0),
-                              child: Image.network(
-                                'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                                width: screenSize.width * .83,
-                                height: screenSize.height / 2.66,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 7.0),
-                          const Text('title',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                          const Text('\$price',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.green)),
-                          const Row(
-                            mainAxisSize: MainAxisSize.min,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height,
+                  child: ListView.builder(
+                      itemCount: 100,
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/likortproductdetail');
+                          },
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.max,
                             children: [
-                              Icon(Icons.star, color: Colors.orange, size: 20),
-                              Text('rating (reviewCount reviews)'),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  child: Image.network(
+                                    'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
+                                    width: screenSize.width * .83,
+                                    height: screenSize.height / 2.66,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 7.0),
+                              const Text('title',
+                                  style: TextStyle(
+                                      fontSize: 18, fontWeight: FontWeight.bold)),
+                              const Text('\$price',
+                                  style:
+                                      TextStyle(fontSize: 16, color: Colors.green)),
+                              const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.star, color: Colors.orange, size: 20),
+                                  Text('rating (reviewCount reviews)'),
+                                ],
+                              ),
+                              const SizedBox(height: 5.0),
+                              const Text('description')
                             ],
                           ),
-                          const SizedBox(height: 5.0),
-                          const Text('description')
-                        ],
-                      ),
-                    );
-                  }),
-            ),
-          ],
+                        );
+                      }),
+        
+              ),
+            ],
+          ),
         ),
       ),
     );
