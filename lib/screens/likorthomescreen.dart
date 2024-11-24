@@ -167,17 +167,17 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
               duration: const Duration(milliseconds: 300),
               child: SizedBox(
                 height: _searchBarVisible
-                    ? MediaQuery.of(context).size.height * .34
+                    ? MediaQuery.of(context).size.height * .345
                     : MediaQuery.of(context).size.height * .01,
                 child: _searchBarVisible
                     ? Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(27.0),
+                            padding: const EdgeInsets.only(top:18.0,bottom: 12,left: 27,right: 27,),
                             child: Text(
                               'Discover the world\'s finest art',
                               style: GoogleFonts.openSans(
-                                fontSize: 30,
+                                fontSize: 26,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -193,11 +193,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.only(left: 19.0,right: 21.0),
                             child: PreferredSize(
                               preferredSize: const Size.fromHeight(48.0),
                               child: Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.only(top:6.0,),
                                 child: TextField(
                                   controller: _searchController,
                                   decoration: InputDecoration(
@@ -231,13 +231,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                     : null,
               ),
             ),
-            Expanded(
+            Flexible(
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 height: _searchBarVisible
-                    ? MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).size.height *
-                            .34 // Adjust height when search bar is visible
+                    ? MediaQuery.of(context).size.height*.665// Adjust height when search bar is visible
                     : MediaQuery.of(context).size.height,
                 child: ListView.builder(
                     controller: _scrollController,

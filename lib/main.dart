@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:likort/auth/likortcreateartproduct.dart';
 import 'package:likort/auth/likortcreatorprofilestore.dart';
@@ -31,6 +32,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
   runApp(
     MultiProvider(
       providers: [
@@ -85,7 +90,7 @@ void main() async {
       ],
       child: const MyApp(),
     ),
-  );
+  );});
 }
 
 class MyApp extends StatefulWidget {
