@@ -167,7 +167,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
               duration: const Duration(milliseconds: 300),
               child: SizedBox(
                 height: _searchBarVisible
-                    ? MediaQuery.of(context).size.height * .32
+                    ? MediaQuery.of(context).size.height * .34
                     : MediaQuery.of(context).size.height * .01,
                 child: _searchBarVisible
                     ? Column(
@@ -237,7 +237,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                 height: _searchBarVisible
                     ? MediaQuery.of(context).size.height -
                         MediaQuery.of(context).size.height *
-                            .32 // Adjust height when search bar is visible
+                            .34 // Adjust height when search bar is visible
                     : MediaQuery.of(context).size.height,
                 child: ListView.builder(
                     controller: _scrollController,
