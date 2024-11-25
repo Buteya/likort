@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LikortHomeScreen extends StatefulWidget {
@@ -44,12 +45,16 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   }
 
   void _scrollListener() {
-    if (_scrollController.offset > 100 && _searchBarVisible) {
+    if (_scrollController.position.userScrollDirection ==
+            ScrollDirection.reverse &&
+        _searchBarVisible) {
       setState(() {
         _searchBarVisible = false;
       });
-    } else if (_scrollController.offset <= 0 && !_searchBarVisible) {
-      // Change here
+    } else if (_scrollController.position.userScrollDirection ==
+            ScrollDirection.forward &&
+        !_searchBarVisible &&
+        _scrollController.offset <= 0) {
       setState(() {
         _searchBarVisible = true;
       });
@@ -88,15 +93,33 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                 items: [
                   const PopupMenuItem<int>(
                     value: 0,
-                    child: Text("Option 1"),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(Icons.notifications),
+                        Text('Notifications')
+                      ],
+                    ),
                   ),
                   const PopupMenuItem<int>(
                     value: 1,
-                    child: Text("Option 2"),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(Icons.favorite_rounded),
+                        Text('Favorites')
+                      ],
+                    ),
                   ),
                   const PopupMenuItem<int>(
                     value: 2,
-                    child: Text("Option 3"),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(Icons.chat_bubble_rounded),
+                        Text('Chat Artist')
+                      ],
+                    ),
                   ),
                 ],
                 elevation: 8.0,
@@ -141,7 +164,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
           IconButton(
               onPressed: () {},
               icon: const Icon(
-                Icons.notifications,
+                Icons.shopping_cart_rounded,
               )),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
@@ -158,46 +181,46 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-        child: Column(
-          children: [
-            AnimatedOpacity(
-              opacity: _searchBarVisible ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              child: SizedBox(
-                height: _searchBarVisible
-                    ? MediaQuery.of(context).size.height * .345
-                    : MediaQuery.of(context).size.height * .01,
-                child: _searchBarVisible
-                    ? Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top:18.0,bottom: 12,left: 27,right: 27,),
-                            child: Text(
-                              'Discover the world\'s finest art',
-                              style: GoogleFonts.openSans(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w600,
-                              ),
+      body: Column(
+        children: [
+          AnimatedOpacity(
+            opacity: _searchBarVisible ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 300),
+            child: SizedBox(
+              height: _searchBarVisible
+                  ? MediaQuery.of(context).size.height * .28
+                  : MediaQuery.of(context).size.height * .01,
+              child: _searchBarVisible
+                  ? Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 29.0,
+                            right: 29.0,
+                          ),
+                          child: Text(
+                            'Discover the world\'s finest art',
+                            style: GoogleFonts.openSans(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 27.0),
-                            child: Text(
-                              'Explore works from the most talented artists showcasing their most finest works',
-                              style: GoogleFonts.openSans(
-                                fontSize: 16,
-                              ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 29.0, right: 29),
+                          child: Text(
+                            'Explore works from the most talented artists showcasing their most finest works',
+                            style: GoogleFonts.openSans(
+                              fontSize: 15,
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 19.0,right: 21.0),
-                            child: PreferredSize(
-                              preferredSize: const Size.fromHeight(48.0),
-                              child: Padding(
-                                padding: const EdgeInsets.only(top:6.0,),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 29.0, right: 29.0, top: 10.0),
+                          child: Row(
+                            children: [
+                              Flexible(
                                 child: TextField(
                                   controller: _searchController,
                                   decoration: InputDecoration(
@@ -224,74 +247,128 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                   },
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : null,
-              ),
-            ),
-            Flexible(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: _searchBarVisible
-                    ? MediaQuery.of(context).size.height*.665// Adjust height when search bar is visible
-                    : MediaQuery.of(context).size.height,
-                child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: 100,
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                        onTap: () {
-                          Navigator.of(context)
-                              .pushNamed('/likortproductdetail');
-                        },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15.0),
-                                child: Image.network(
-                                  'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                                  width: screenSize.width * .83,
-                                  height: screenSize.height / 2.66,
-                                  fit: BoxFit.cover,
+                              const Card(
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    Icons.tune_rounded,
+                                    size: 30,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 7.0),
-                            const Text(
-                              'title',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const Text(
-                              '\$price',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.green),
-                            ),
-                            const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.star,
-                                    color: Colors.orange, size: 20),
-                                Text('rating (reviewCount reviews)'),
-                              ],
-                            ),
-                            const SizedBox(height: 5.0),
-                            const Text('description')
-                          ],
+                            ],
+                          ),
                         ),
-                      );
-                    }),
+                      ],
+                    )
+                  : null,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 29.0, bottom: 20.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('new'),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('Popular'),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('Painting'),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('Decor'),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: _searchBarVisible
+                  ? MediaQuery.of(context)
+                      .size
+                      .height // Adjust height when search bar is visible
+                  : MediaQuery.of(context).size.height,
+              child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: 100,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.of(context).pushNamed('/likortproductdetail');
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(15.0),
+                            child: Image.network(
+                              'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
+                              width: screenSize.width * .83,
+                              height: screenSize.height / 2.66,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8.0),
+                                child: Icon(
+                                  Icons.favorite_rounded,
+                                ),
+                              ),
+                              SizedBox(width: MediaQuery.of(context).size.width*.1,)
+                            ],
+                          ),
+                          const Text(
+                            'title',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const Text(
+                            '\$price',
+                            style: TextStyle(fontSize: 16, color: Colors.green),
+                          ),
+                          const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.star, color: Colors.orange, size: 20),
+                              Text('rating (reviewCount reviews)'),
+                            ],
+                          ),
+                          const Text('description')
+                        ],
+                      ),
+                    );
+                  }),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: _searchBarVisible
           ? null
