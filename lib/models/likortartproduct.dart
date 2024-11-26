@@ -10,11 +10,13 @@ class Product extends ChangeNotifier {
   final String typeOfArt;
   final String description;
   final double price;
+  final String storeId;
   final List<String> imageUrls;
   bool isFavorite;
 
   Product({
     required this.id,
+    required this.storeId,
     required this.name,
     required this.description,
     required this.price,
@@ -77,6 +79,7 @@ class Product extends ChangeNotifier {
       imageUrls: List<String>.from(json['imageUrls']),
       shop: json['shop'],
       typeOfArt: json['typeOfArt'],
+      storeId: json['storeId'],
     );
   }
 
