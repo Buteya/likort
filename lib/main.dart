@@ -16,6 +16,7 @@ import 'package:likort/models/likortusers.dart';
 import 'package:likort/screens/likortcartscreen.dart';
 import 'package:likort/screens/likortcheckoutscreen.dart';
 import 'package:likort/screens/likortcompletedorder.dart';
+import 'package:likort/screens/likortfavoritesscreen.dart';
 import 'package:likort/screens/likortforgotpasswordscreen.dart';
 import 'package:likort/screens/likorthomescreen.dart';
 import 'package:likort/screens/likortpaycash.dart';
@@ -36,61 +37,66 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]).then((_) {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => User(
-            id: '',
-            firstname: '',
-            lastname: '',
-            email: '',
-            password: '',
-            phone: '',
-            latitude: 0,
-            longitude: 0,
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (context) => User(
+              id: '',
+              firstname: '',
+              lastname: '',
+              email: '',
+              password: '',
+              phone: '',
+              latitude: 0,
+              longitude: 0,
+            ),
           ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => Store(
-            id: '',
-            name: '',
-            description: '',
-            products: [],
+          ChangeNotifierProvider(
+            create: (context) => Store(
+              id: '',
+              name: '',
+              description: '',
+              products: [],
+            ),
           ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => Order(
-            id: '',
-            items: [],
-            orderDate: DateTime(DateTime.now().year),
+          ChangeNotifierProvider(
+            create: (context) => Order(
+              id: '',
+              items: [],
+              orderDate: DateTime(DateTime.now().year),
+            ),
           ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => CartItem(
-            id: '',
-            product: Product(
+          ChangeNotifierProvider(
+            create: (context) => CartItem(
+              id: '',
+              product: Product(
+                id: '',
+                name: '',
+                description: '',
+                price: 0,
+                imageUrls: [],
+                shop: '',
+                typeOfArt: '',
+              ),
+            ),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => Product(
               id: '',
               name: '',
               description: '',
               price: 0,
               imageUrls: [],
+              shop: '',
+              typeOfArt: '',
             ),
           ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => Product(
-            id: '',
-            name: '',
-            description: '',
-            price: 0,
-            imageUrls: [],
-          ),
-        ),
-      ],
-      child: const MyApp(),
-    ),
-  );});
+        ],
+        child: const MyApp(),
+      ),
+    );
+  });
 }
 
 class MyApp extends StatefulWidget {
@@ -210,7 +216,8 @@ class _MyAppState extends State<MyApp> {
             const LikortCreatorProfileStore(),
         '/likortcreateartproduct': (context) => const LikortCreateArtProduct(),
         '/likortforgotpassword': (context) => const ForgotPasswordScreen(),
-        '/likortsplashscreen':(context) => const LikortSplashScreen(),
+        '/likortsplashscreen': (context) => const LikortSplashScreen(),
+        '/likortfavoritesscreen': (context) => const LikortFavoriteScreen(),
       },
     );
   }

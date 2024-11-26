@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '../models/likortartproduct.dart';
 
 class LikortHomeScreen extends StatefulWidget {
   const LikortHomeScreen({
@@ -29,12 +32,16 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     'Item 5'
   ]; // Your data
   List<String> _filteredItems = [];
+  String _selectedCategory = 'All'; // Initial filter category
+  final RangeValues _priceRange = const RangeValues(0, 100);
 
   @override
   void initState() {
     super.initState();
     _filteredItems = _items;
     _scrollController.addListener(_scrollListener);
+    Provider.of<Product>(context, listen: false)
+        .loadFavorites(); // Load favorites on initialization
   }
 
   @override
@@ -42,6 +49,25 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _applyFilters() {
+    setState(() {
+      _filteredItems = _items.where((item) {
+        // Category filter
+        if (_selectedCategory != 'All' && item != _selectedCategory) {
+          return false;
+        }
+        // Price range filter (example - assuming items have prices)
+        // Replace with your actual price filtering logic
+        // final itemPrice = getItemPrice(item); // Get price of the item
+        // if (itemPrice < _priceRange.start || itemPrice > _priceRange.end) {
+        //   return false;
+        // }
+
+        return true;
+      }).toList();
+    });
   }
 
   void _scrollListener() {
@@ -69,6 +95,14 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     });
   }
 
+  // Search function
+  List<Product> searchProductsByType(
+      List<Product> allProducts, String productType) {
+    return allProducts
+        .where((product) => product.typeOfArt == productType)
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get the screen size
@@ -76,6 +110,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     // Get the screen orientation
     var orientation = MediaQuery.of(context).orientation;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final product = Provider.of<Product>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -126,6 +161,10 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
               ).then((value) {
                 if (value != null) {
                   // Handle menu selection here
+                  if (value == 1) {
+                    Navigator.of(context)
+                        .pushReplacementNamed('/likortfavoritesscreen');
+                  }
                   print("Selected: $value");
                 }
               });
@@ -133,19 +172,24 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Transform.rotate(
-              angle: -6 * 3.1415926535897932 / 180,
-              child: Transform.scale(
-                scaleX: 1.36,
-                scaleY: 1.0,
-                child: Text(
-                  widget.title,
-                  style: GoogleFonts.dancingScript(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
+        title: InkWell(
+          onTap: () {
+            Navigator.of(context).pushReplacementNamed('/likorthomescreen');
+          },
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Transform.rotate(
+                angle: -6 * 3.1415926535897932 / 180,
+                child: Transform.scale(
+                  scaleX: 1.36,
+                  scaleY: 1.0,
+                  child: Text(
+                    widget.title,
+                    style: GoogleFonts.dancingScript(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -247,12 +291,67 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                   },
                                 ),
                               ),
-                              const Card(
-                                child: Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Icon(
-                                    Icons.tune_rounded,
-                                    size: 30,
+                              InkWell(
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: const Text('Filter Options'),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              DropdownButton<String>(
+                                                value: _selectedCategory,
+                                                items: [
+                                                  'All',
+                                                  'Fruits',
+                                                  'Vegetables'
+                                                ]
+                                                    .map((category) =>
+                                                        DropdownMenuItem(
+                                                          value: category,
+                                                          child: Text(category),
+                                                        ))
+                                                    .toList(),
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    _selectedCategory = value!;
+                                                  });
+                                                },
+                                              ),
+                                              // Price range slider (example)
+                                              // RangeSlider(
+                                              //   values: _priceRange,
+                                              //   min: 0,
+                                              //   max: 100,
+                                              //   onChanged: (values) {
+                                              //     setState(() {
+                                              //       _priceRange = values;
+                                              //     });
+                                              //   },
+                                              // ),
+                                            ],
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                _applyFilters(); // Apply filters when dialog is closed
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text('Apply'),
+                                            ),
+                                          ],
+                                        );
+                                      });
+                                },
+                                child: const Card(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(
+                                      Icons.tune_rounded,
+                                      size: 30,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -286,7 +385,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                     width: 10,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        // _filteredItems = searchProductsByType(allProducts, text).cast<String>();
+                      });
+                    },
                     child: const Text('Painting'),
                   ),
                   const SizedBox(
@@ -335,33 +438,46 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              const Padding(
-                                padding: EdgeInsets.only(top: 8.0),
-                                child: Icon(
-                                  Icons.favorite_rounded,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: InkWell(
+                                  onTap: () {
+                                    // product
+                                    //     // .toggleFavorite(product.products[0].id);
+                                  },
+                                  child: const Icon(Icons.favorite_rounded
+                                      // product.products[0].isFavorite
+                                      //     ? Icons.favorite
+                                      //     : Icons.favorite_border,
+                                      // color: product.products[0].isFavorite
+                                      //     ? Colors.red
+                                      //     : Colors.grey,
+                                      ),
                                 ),
                               ),
-                              SizedBox(width: MediaQuery.of(context).size.width*.1,)
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * .1,
+                              )
                             ],
                           ),
                           const Text(
-                            'title',
+                            'paint brushes',
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Text(
+                            'anne\'s shop',
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           const Text(
-                            '\$price',
+                            '\$99',
                             style: TextStyle(fontSize: 16, color: Colors.green),
                           ),
-                          const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.star, color: Colors.orange, size: 20),
-                              Text('rating (reviewCount reviews)'),
-                            ],
-                          ),
-                          const Text('description')
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * .1,
+                          )
                         ],
                       ),
                     );
