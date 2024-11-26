@@ -13,7 +13,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(Icons.arrow_circle_left_outlined),
+        leading: const Icon(Icons.arrow_circle_left_outlined),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -91,7 +91,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
             ],),
           ),
           SizedBox(height: MediaQuery.of(context).size.height*.01,),
-          Row(mainAxisAlignment:MainAxisAlignment.end,children: [Icon(Icons.favorite_rounded),SizedBox(width: MediaQuery.of(context).size.width*.1,)],),
+          Row(mainAxisAlignment:MainAxisAlignment.end,children: [const Icon(Icons.favorite_rounded),SizedBox(width: MediaQuery.of(context).size.width*.1,)],),
           const Text('paint brushes'),
           const Text('ann\'s store'),
           const Text('The brushes are likely made of natural materials, possibly wood and animal hair.The container might be a repurposed jar or pot, adding to the rustic charm.'),
@@ -100,16 +100,16 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ElevatedButton(onPressed: (){}, child: Row(children: [Icon(Icons.remove),Text('1'),Icon(Icons.add)],)),
+              ElevatedButton(onPressed: (){}, child: const Row(children: [Icon(Icons.remove),Text('1'),Icon(Icons.add)],)),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pushNamed('/likortcart');
                 },
-                child: Flexible(
+                child: const Flexible(
                   child: Row(
                     children: [
                       Icon(Icons.shopping_cart_rounded),
-                      const Text('add to cart'),
+                      Text('add to cart'),
                     ],
                   ),
                 ),
