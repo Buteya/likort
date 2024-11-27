@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../models/likortartproduct.dart';
+import '../widgets/customappbar.dart';
 
 class LikortHomeScreen extends StatefulWidget {
   const LikortHomeScreen({
@@ -15,6 +16,7 @@ class LikortHomeScreen extends StatefulWidget {
   final String title;
   final ThemeMode themeMode;
   final Function() toggleThemeMode;
+
 
   @override
   State<LikortHomeScreen> createState() => _LikortHomeScreenState();
@@ -111,120 +113,20 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     var orientation = MediaQuery.of(context).orientation;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final product = Provider.of<Product>(context, listen: false);
+    final String appTitle = widget.title;
+    final ThemeMode appThemeMode = widget.themeMode;
+    final Function() toggleThemeMode = widget.toggleThemeMode;
+
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 74,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(
-              Icons.dehaze_rounded,
-              size: 40,
-            ),
-            onPressed: () {
-              showMenu(
-                context: context,
-                position: const RelativeRect.fromLTRB(0, kToolbarHeight, 0, 0),
-                items: [
-                  const PopupMenuItem<int>(
-                    value: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(Icons.notifications),
-                        Text('Notifications')
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem<int>(
-                    value: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(Icons.favorite_rounded),
-                        Text('Favorites')
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem<int>(
-                    value: 2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(Icons.chat_bubble_rounded),
-                        Text('Chat Artist')
-                      ],
-                    ),
-                  ),
-                ],
-                elevation: 8.0,
-              ).then((value) {
-                if (value != null) {
-                  // Handle menu selection here
-                  if (value == 1) {
-                    Navigator.of(context)
-                        .pushReplacementNamed('/likortfavoritesscreen');
-                  }
-                  print("Selected: $value");
-                }
-              });
-            },
-          ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: InkWell(
-          onTap: () {
-            Navigator.of(context).pushReplacementNamed('/likorthomescreen');
-          },
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Transform.rotate(
-                angle: -6 * 3.1415926535897932 / 180,
-                child: Transform.scale(
-                  scaleX: 1.36,
-                  scaleY: 1.0,
-                  child: Text(
-                    widget.title,
-                    style: GoogleFonts.dancingScript(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(widget.themeMode == ThemeMode.light
-                ? Icons.wb_sunny
-                : (widget.themeMode == ThemeMode.dark
-                    ? Icons.nights_stay
-                    : Icons.brightness_auto)),
-            onPressed: widget.toggleThemeMode,
-          ),
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.shopping_cart_rounded,
-              )),
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context).pushNamed('/likortuserprofile');
-              },
-              child: const CircleAvatar(
-                child: Icon(
-                  Icons.person,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: CustomAppBar(
+              appTitle: appTitle,
+              appThemeMode: appThemeMode,
+              toggleThemeMode: toggleThemeMode,
+
+          ),),
       body: Column(
         children: [
           AnimatedOpacity(
@@ -471,9 +373,9 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          const Text(
+                          Text(
                             '\$99',
-                            style: TextStyle(fontSize: 16, color: Colors.green),
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           SizedBox(
                             height: MediaQuery.of(context).size.height * .1,

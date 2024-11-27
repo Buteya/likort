@@ -13,6 +13,20 @@ class CartItem extends ChangeNotifier{
     this.quantity = 1,
   });
 
+  final List<CartItem> items = [];
+
+  void add(Product product) {
+    final existingItemIndex = items.indexWhere((item) => item.product.id == product.id);
+
+    if (existingItemIndex != -1) {
+      // If product already in cart, increase quantity
+      items[existingItemIndex].quantity++;
+    } else {
+      // If product not in cart, add it
+      // items.add(CartItem(product: product));
+    }}
+
+
   void incrementQuantity() {
     quantity++;
     notifyListeners();

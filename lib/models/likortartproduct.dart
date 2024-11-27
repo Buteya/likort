@@ -12,6 +12,7 @@ class Product extends ChangeNotifier {
   final double price;
   final String storeId;
   final List<String> imageUrls;
+  int quantity;
   bool isFavorite;
 
   Product({
@@ -24,6 +25,7 @@ class Product extends ChangeNotifier {
     required this.shop,
     required this.typeOfArt,
     this.isFavorite = false,
+    this.quantity = 1,
   });
 
   final List<Product> _products = [];
@@ -45,6 +47,18 @@ class Product extends ChangeNotifier {
       }
       notifyListeners(); // Notify listeners of state change
     }
+  }
+
+  void increaseQuantity(String productId) {
+    final productIndex = _products.indexWhere((product)=> product.id == productId);
+    _products[productIndex].quantity++;
+    notifyListeners();
+  }
+
+  void decreaseQuantity(String productId) {
+    final productIndex = _products.indexWhere((product)=> product.id == productId);
+    _products[productIndex].quantity--;
+    notifyListeners();
   }
 
   Future<void> loadFavorites() async {

@@ -178,6 +178,10 @@ class _MyAppState extends State<MyApp> {
             fontSize: 36,
             fontWeight: FontWeight.bold,
           ),
+          headlineLarge: GoogleFonts.lobster(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
           headlineSmall: GoogleFonts.openSans(
             fontSize: 24,
             fontWeight: FontWeight.w600,
