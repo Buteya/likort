@@ -16,10 +16,13 @@ import 'package:likort/models/likortusers.dart';
 import 'package:likort/screens/likortcartscreen.dart';
 import 'package:likort/screens/likortcheckoutscreen.dart';
 import 'package:likort/screens/likortcompletedorder.dart';
+import 'package:likort/screens/likortcontactsupportscreen.dart';
 import 'package:likort/screens/likortfavoritesscreen.dart';
 import 'package:likort/screens/likortforgotpasswordscreen.dart';
 import 'package:likort/screens/likorthomescreen.dart';
 import 'package:likort/screens/likortpaycash.dart';
+import 'package:likort/screens/likortpaymentfailurescreen.dart';
+import 'package:likort/screens/likortpaymentsuccessscreen.dart';
 import 'package:likort/screens/likortproductdetailscreen.dart';
 import 'package:likort/screens/likortsplashscreen.dart';
 import 'package:likort/screens/likorttrackorder.dart';
@@ -224,6 +227,9 @@ class _MyAppState extends State<MyApp> {
         '/likortforgotpassword': (context) => const ForgotPasswordScreen(),
         '/likortsplashscreen': (context) => const LikortSplashScreen(),
         '/likortfavoritesscreen': (context) => const LikortFavoriteScreen(),
+        '/likortpaymentfailure' :(context) => const LikortPaymentFailureScreen(),
+        '/likortpaymentsuccess' : (context) => const LikortPaymentSuccessScreen(),
+        '/likortcontactsupport' : (context) => const LikortContactSupportScreen(),
       },
     );
   }

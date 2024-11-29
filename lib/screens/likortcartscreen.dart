@@ -501,7 +501,9 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).pushReplacementNamed('/likortcheckout');
+                      },
                       child: const Row(
                         children: [
                           Text('checkout'),
