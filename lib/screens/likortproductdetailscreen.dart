@@ -14,9 +14,9 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: InkWell(
-          onTap: (){
-            Navigator.of(context).pushReplacementNamed('/likorthomescreen');
-          },
+            onTap: () {
+              Navigator.of(context).pushReplacementNamed('/likorthomescreen');
+            },
             child: const Icon(Icons.arrow_circle_left_outlined)),
       ),
       body: SingleChildScrollView(
@@ -125,22 +125,30 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
             const Text('Supplies'),
             Text(
               'ann\'s store',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const Center(
-                child: SizedBox(
-                    width: 200,
-                    child: Text(
-                      'The brushes are likely made of natural materials, possibly wood and animal hair.The container might be a repurposed jar or pot, adding to the rustic charm.',
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(fontWeight: FontWeight.w400),
-                    ),),),
+              child: SizedBox(
+                width: 200,
+                child: Text(
+                  'The brushes are likely made of natural materials, possibly wood and animal hair.The container might be a repurposed jar or pot, adding to the rustic charm.',
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(fontWeight: FontWeight.w400),
+                ),
+              ),
+            ),
             SizedBox(
               height: MediaQuery.of(context).size.height * .03,
             ),
             Text(
               '\$99',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             SizedBox(
               height: MediaQuery.of(context).size.height * .03,
@@ -151,6 +159,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                 ElevatedButton(
                     onPressed: () {},
                     child: const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.remove),
                         Text('1'),
@@ -159,10 +168,12 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                     )),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed('/likorthomescreen');
+                    Navigator.of(context)
+                        .pushReplacementNamed('/likorthomescreen');
                   },
                   child: const Flexible(
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.shopping_cart_rounded),
                         Text('add to cart'),
