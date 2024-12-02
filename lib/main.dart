@@ -26,6 +26,7 @@ import 'package:likort/screens/likortpaymentsuccessscreen.dart';
 import 'package:likort/screens/likortproductdetailscreen.dart';
 import 'package:likort/screens/likortsplashscreen.dart';
 import 'package:likort/screens/likorttrackorder.dart';
+import 'package:likort/screens/likortusersettings.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -230,6 +231,7 @@ class _MyAppState extends State<MyApp> {
         '/likortpaymentfailure' :(context) => const LikortPaymentFailureScreen(),
         '/likortpaymentsuccess' : (context) => const LikortPaymentSuccessScreen(),
         '/likortcontactsupport' : (context) => const LikortContactSupportScreen(),
+        '/likortusersettings' : (context) => const LikortUserSettings(),
       },
     );
   }
