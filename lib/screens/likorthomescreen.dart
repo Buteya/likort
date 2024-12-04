@@ -43,7 +43,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     _filteredItems = _items;
     _scrollController.addListener(_scrollListener);
     Provider.of<Product>(context, listen: false)
-        .loadFavorites(); // Load favorites on initialization
+        .favoriteProducts; // Load favorites on initialization
   }
 
   @override

@@ -36,11 +36,18 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
                     value: 1,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [Icon(Icons.settings), Text('Settings')],
+                      children: [Icon(Icons.store_rounded), Text('Manage Store')],
                     ),
                   ),
                   const PopupMenuItem<int>(
                     value: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [Icon(Icons.settings), Text('Settings')],
+                    ),
+                  ),
+                  const PopupMenuItem<int>(
+                    value: 3,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [Icon(Icons.logout_rounded), Text('Logout')],
@@ -51,7 +58,7 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
               ).then((value) {
                 if (value != null) {
                   // Handle menu selection here
-                  if (value == 1) {
+                  if (value == 2) {
                     Navigator.of(context)
                         .pushReplacementNamed('/likortusersettings');
                   }

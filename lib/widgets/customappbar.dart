@@ -62,6 +62,16 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     ],
                   ),
                 ),
+                const PopupMenuItem<int>(
+                  value: 3,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Icon(Icons.admin_panel_settings_rounded),
+                      Text('Admin Panel')
+                    ],
+                  ),
+                ),
               ],
               elevation: 8.0,
             ).then((value) {
@@ -71,6 +81,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   Navigator.of(context)
                       .pushReplacementNamed('/likortfavoritesscreen');
                 }
+                if (value == 3) {
+                  Navigator.of(context)
+                      .pushReplacementNamed('/likortadminhome');
+                }
+
                 print("Selected: $value");
               }
             });

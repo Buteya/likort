@@ -1,6 +1,8 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:likort/models/likortreview.dart';
+
 
 class User extends ChangeNotifier {
   final String id;
@@ -12,6 +14,12 @@ class User extends ChangeNotifier {
   final String usertype;
   final double latitude;
   final double longitude;
+  final String storeId;
+  final List<Review> reviews;
+  final List<String> favorites;
+  final String imageUrl;
+  final List<String> notifications;
+  final DateTime created;
 
   final List<User> _users = [];
 
@@ -27,6 +35,12 @@ class User extends ChangeNotifier {
     this.usertype = 'basic user',
     required this.latitude,
     required this.longitude,
+    required this.imageUrl,
+    required this.storeId,
+    required this.reviews,
+    required this.favorites,
+    required this.notifications,
+    required this.created,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -40,6 +54,12 @@ class User extends ChangeNotifier {
       usertype: json['usertype'],
       latitude: json['latitude'],
       longitude: json['longitude'],
+      imageUrl: json['imageUrl'],
+      storeId: json['orderIds'],
+      reviews: json['reviews'],
+      favorites: json['favorites'],
+      notifications: json['notifications'],
+      created: json['created'],
     );
   }
 
@@ -54,6 +74,12 @@ class User extends ChangeNotifier {
       'usertype': usertype,
       'latitude': latitude,
       'longitude': longitude,
+      'notification':notifications,
+      'favorites' : favorites,
+      'reviews' : reviews,
+      'orderIds' : storeId,
+      'imageUrl' :imageUrl,
+      'created' : created,
     };
   }
 

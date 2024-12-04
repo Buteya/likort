@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:likort/admin/likortadminhome.dart';
 import 'package:likort/auth/likortcreateartproduct.dart';
 import 'package:likort/auth/likortcreatorprofilestore.dart';
 import 'package:likort/auth/likortbuildcreatorstore.dart';
@@ -10,7 +11,10 @@ import 'package:likort/auth/likortsignup.dart';
 import 'package:likort/auth/likortuserprofile.dart';
 import 'package:likort/models/likortartproduct.dart';
 import 'package:likort/models/likortcartitem.dart';
+import 'package:likort/models/likortnotifications.dart';
 import 'package:likort/models/likortorders.dart';
+import 'package:likort/models/likortpayment.dart';
+import 'package:likort/models/likortreview.dart';
 import 'package:likort/models/likortstore.dart';
 import 'package:likort/models/likortusers.dart';
 import 'package:likort/screens/likortcartscreen.dart';
@@ -54,6 +58,12 @@ void main() async {
               phone: '',
               latitude: 0,
               longitude: 0,
+              imageUrl: '',
+              storeId: '',
+              reviews: [],
+              favorites: [],
+              notifications: [],
+              created: DateTime.now(),
             ),
           ),
           ChangeNotifierProvider(
@@ -62,13 +72,20 @@ void main() async {
               name: '',
               description: '',
               products: [],
+              userId: '',
+              created: DateTime.now(),
+              imageUrl: [],
+              reviews: [],
+              notifications: [],
+              orders: [],
             ),
           ),
           ChangeNotifierProvider(
             create: (context) => Order(
-              id: '',
+              orderId: '',
               items: [],
               orderDate: DateTime(DateTime.now().year),
+              userId: '',
             ),
           ),
           ChangeNotifierProvider(
@@ -80,9 +97,8 @@ void main() async {
                 description: '',
                 price: 0,
                 imageUrls: [],
-                shop: '',
-                typeOfArt: '',
                 storeId: '',
+                typeOfArt: '',
               ),
             ),
           ),
@@ -93,9 +109,33 @@ void main() async {
               description: '',
               price: 0,
               imageUrls: [],
-              shop: '',
-              typeOfArt: '',
               storeId: '',
+              typeOfArt: '',
+            ),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => Review(
+                reviewId: '',
+                productId: '',
+                createdAt: DateTime.now(),
+                review: '',
+                userId: ''),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => Payment(
+              paymentId: '',
+              orderId: '',
+              amount: 0,
+              status: '',
+              createdAt: DateTime.now(),
+            ),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => LikortNotification(
+              notificationId: '',
+              createdAt: DateTime.now(),
+              users: [],
+              stores: [],
             ),
           ),
         ],
@@ -228,10 +268,14 @@ class _MyAppState extends State<MyApp> {
         '/likortforgotpassword': (context) => const ForgotPasswordScreen(),
         '/likortsplashscreen': (context) => const LikortSplashScreen(),
         '/likortfavoritesscreen': (context) => const LikortFavoriteScreen(),
-        '/likortpaymentfailure' :(context) => const LikortPaymentFailureScreen(),
-        '/likortpaymentsuccess' : (context) => const LikortPaymentSuccessScreen(),
-        '/likortcontactsupport' : (context) => const LikortContactSupportScreen(),
-        '/likortusersettings' : (context) => const LikortUserSettings(),
+        '/likortpaymentfailure': (context) =>
+            const LikortPaymentFailureScreen(),
+        '/likortpaymentsuccess': (context) =>
+            const LikortPaymentSuccessScreen(),
+        '/likortcontactsupport': (context) =>
+            const LikortContactSupportScreen(),
+        '/likortusersettings': (context) => const LikortUserSettings(),
+        '/likortadminhome' : (context) => const LikortAdminHome(),
       },
     );
   }

@@ -149,6 +149,12 @@ class _LikortSignupState extends State<LikortSignup> {
               phone: _phoneNumber.phoneNumber.toString(),
               latitude: _selectedMarker!.position.latitude,
               longitude: _selectedMarker!.position.longitude,
+              imageUrl: '',
+              storeId: '',
+              reviews: [],
+              favorites: [],
+              notifications: [],
+              created: DateTime.now(),
             ));
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -180,6 +186,12 @@ class _LikortSignupState extends State<LikortSignup> {
               phone: _phoneNumber.phoneNumber.toString(),
               latitude: _selectedMarker!.position.latitude,
               longitude: _selectedMarker!.position.longitude,
+              imageUrl: '',
+              storeId: '',
+              reviews: [],
+              favorites: [],
+              notifications: [],
+              created: DateTime.now(),
             ));
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(

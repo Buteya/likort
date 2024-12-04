@@ -21,8 +21,8 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context);
     // Filter items to get only favorites
-    final favoriteItems = product.favoriteIds
-        .where((products) => product.favoriteIds.contains(product.id))
+    final favoriteItems = product.favoriteProducts
+        .where((products) => product.favoriteProducts.contains(product.id))
         .toList();
     return Scaffold(
       appBar: AppBar(
