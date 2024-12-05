@@ -24,6 +24,7 @@ import 'package:likort/screens/likortcontactsupportscreen.dart';
 import 'package:likort/screens/likortfavoritesscreen.dart';
 import 'package:likort/screens/likortforgotpasswordscreen.dart';
 import 'package:likort/screens/likorthomescreen.dart';
+import 'package:likort/screens/likortmanagestorescreen.dart';
 import 'package:likort/screens/likortpaycash.dart';
 import 'package:likort/screens/likortpaymentfailurescreen.dart';
 import 'package:likort/screens/likortpaymentsuccessscreen.dart';
@@ -276,6 +277,7 @@ class _MyAppState extends State<MyApp> {
             const LikortContactSupportScreen(),
         '/likortusersettings': (context) => const LikortUserSettings(),
         '/likortadminhome' : (context) => const LikortAdminHome(),
+        '/likortmanagestore' : (context) => const LikortManageStoreScreen(),
       },
     );
   }

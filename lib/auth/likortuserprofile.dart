@@ -73,6 +73,10 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                     Navigator.of(context)
                         .pushReplacementNamed('/likorthomescreen');
                   }
+                  if (value == 1) {
+                    Navigator.of(context)
+                        .pushReplacementNamed('/likortmanagestore');
+                  }
                   print("Selected: $value");
                 }
               });
