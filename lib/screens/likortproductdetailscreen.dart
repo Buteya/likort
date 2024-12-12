@@ -153,34 +153,46 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
             SizedBox(
               height: MediaQuery.of(context).size.height * .03,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                    onPressed: () {},
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Add padding
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed:() {
+                      // Handle remove quantity
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0), // Adjust padding
+                    ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.remove),
+                        SizedBox(width: 8.0), // Add spacing
                         Text('1'),
-                        Icon(Icons.add)
+                        SizedBox(width: 8.0), // Add spacing
+                        Icon(Icons.add),
                       ],
-                    )),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .pushReplacementNamed('/likorthomescreen');
+                    ),
+                  ),
+                  ElevatedButton(onPressed: () {
+                    Navigator.of(context).pushReplacementNamed('/likorthomescreen');
                   },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0), // Adjust padding
+                    ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.shopping_cart_rounded),
-                        Text('add to cart'),
+                        SizedBox(width: 8.0), // Add spacing
+                        Text('Add to Cart'), // Capitalize text
                       ],
                     ),
-
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
             SizedBox(
               height: MediaQuery.of(context).size.height * .02,
