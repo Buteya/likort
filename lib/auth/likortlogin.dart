@@ -43,6 +43,25 @@ class _LikortLoginState extends State<LikortLogin> {
       if ((prefEmail == email &&
               users.users.any((user) => user.email == email)) &&
           decodedPassword == password) {
+        users.updateUser(
+          User(
+            id: users.users.last.id,
+            firstname: users.users.last.firstname,
+            lastname: users.users.last.lastname,
+            email: email,
+            password: password,
+            phone: users.users.last.phone,
+            latitude: users.users.last.latitude,
+            longitude: users.users.last.longitude,
+            imageUrl: users.users.last.imageUrl,
+            storeId: users.users.last.storeId,
+            reviews: users.users.last.reviews,
+            favorites: users.users.last.favorites,
+            notifications: users.users.last.notifications,
+            created: users.users.last.created,
+            isOnline: users.users.last.isOnline = true,
+          ),
+        );
         Navigator.pushNamed(context, '/likorthomescreen');
       } else {
         //messages shown if user already exists

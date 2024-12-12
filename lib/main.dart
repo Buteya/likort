@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:likort/admin/likortadminhome.dart';
+import 'package:likort/admin/likortcreateuser.dart';
+import 'package:likort/admin/likortviewallusers.dart';
 import 'package:likort/auth/likortcreateartproduct.dart';
 import 'package:likort/auth/likortcreatorprofilestore.dart';
 import 'package:likort/auth/likortbuildcreatorstore.dart';
@@ -278,6 +280,8 @@ class _MyAppState extends State<MyApp> {
         '/likortusersettings': (context) => const LikortUserSettings(),
         '/likortadminhome' : (context) => const LikortAdminHome(),
         '/likortmanagestore' : (context) => const LikortManageStoreScreen(),
+        '/likortviewallusers' : (context) => const LikortViewAllUsers(),
+        '/likortcreateuser' : (context) => const LikortCreateUser(),
       },
     );
   }

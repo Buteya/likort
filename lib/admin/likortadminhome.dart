@@ -41,9 +41,12 @@ class _LikortAdminHomeState extends State<LikortAdminHome> {
               title: const Text('create user'),
               onTap: () {
                 // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.pop(context);
+                Navigator.of(context)
+                    .pushReplacementNamed('/likortcreateuser')
+                    .then((_) {
+                  // Then close the drawer
+                  Navigator.pop(context);
+                });
               },
             ),
             ListTile(
@@ -51,9 +54,12 @@ class _LikortAdminHomeState extends State<LikortAdminHome> {
               title: const Text('view all users'),
               onTap: () {
                 // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.pop(context);
+                Navigator.of(context)
+                    .pushReplacementNamed('/likortviewallusers')
+                    .then((_) {
+                  // Then close the drawer
+                  Navigator.pop(context);
+                });
               },
             ),
             Text('store'),

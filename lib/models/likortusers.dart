@@ -11,7 +11,7 @@ class User extends ChangeNotifier {
   final String email;
   final String password;
   final String phone;
-  final String usertype;
+  String usertype;
   final double latitude;
   final double longitude;
   final String storeId;
@@ -20,6 +20,7 @@ class User extends ChangeNotifier {
   final String imageUrl;
   final List<String> notifications;
   final DateTime created;
+  bool isOnline;
 
   final List<User> _users = [];
 
@@ -41,6 +42,7 @@ class User extends ChangeNotifier {
     required this.favorites,
     required this.notifications,
     required this.created,
+    this.isOnline = false,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -60,6 +62,7 @@ class User extends ChangeNotifier {
       favorites: json['favorites'],
       notifications: json['notifications'],
       created: json['created'],
+      isOnline: json['isOnline'],
     );
   }
 
@@ -80,6 +83,7 @@ class User extends ChangeNotifier {
       'orderIds' : storeId,
       'imageUrl' :imageUrl,
       'created' : created,
+      'isOnline':isOnline,
     };
   }
 

@@ -171,20 +171,19 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                     Navigator.of(context)
                         .pushReplacementNamed('/likorthomescreen');
                   },
-                  child: const Flexible(
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.shopping_cart_rounded),
                         Text('add to cart'),
                       ],
                     ),
-                  ),
+
                 ),
               ],
             ),
             SizedBox(
-              height: MediaQuery.of(context).size.height * .1,
+              height: MediaQuery.of(context).size.height * .02,
             )
           ],
         ),
