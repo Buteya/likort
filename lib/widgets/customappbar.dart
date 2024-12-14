@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../models/likortusers.dart';
 import 'cartbadge.dart';
 
 class CustomAppBar extends StatefulWidget {
@@ -147,11 +149,24 @@ class _CustomAppBarState extends State<CustomAppBar> {
             onTap: () {
               Navigator.of(context).pushNamed('/likortuserprofile');
             },
-            child: const CircleAvatar(
-              child: Icon(
-                Icons.person,
-              ),
-            ),
+            child: Provider.of<User>(
+              context,
+              listen: false,
+            ).users.last.imageUrl.isEmpty
+                ? const CircleAvatar(
+                    child: Icon(
+                      Icons.person,
+                    ),
+                  )
+                : CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    backgroundImage: NetworkImage(
+                      Provider.of<User>(
+                        context,
+                        listen: false,
+                      ).users.last.imageUrl,
+                    ),
+                  ),
           ),
         ),
       ],

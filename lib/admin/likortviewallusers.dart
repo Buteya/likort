@@ -26,10 +26,15 @@ class _LikortViewAllUsersState extends State<LikortViewAllUsers> {
       appBar: AppBar(),
       body: Consumer<User>(
         builder: (context, users, child) {
+          // Create a modifiable copy of the users list
+          final sortedUsers = List<User>.from(users.users);
+
+          // Sort the modifiable copy
+          sortedUsers.sort((a, b) => b.created.compareTo(a.created));
           return ListView.builder(
-            itemCount: users.users.length,
+            itemCount: sortedUsers.length, // Use the sorted copy
             itemBuilder: (context, index) {
-              final user = users.users[index];
+              final user = sortedUsers[index];
               return ExpansionTile(
                 initiallyExpanded: _isExpanded[index], // Set initial expansion state
                 onExpansionChanged: (expanded) {
