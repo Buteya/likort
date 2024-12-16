@@ -51,6 +51,7 @@ dependencies:
   libphonenumber_web: ^0.3.2
   url_launcher: ^6.3.1
   flutter_rating_bar: ^4.0.1
+  image_cropper: ^8.0.2
 
 dev_dependencies:
   flutter_test:

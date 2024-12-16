@@ -67,7 +67,7 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
             notifications: [],
             created: currentUser!.created),
       );
-    }else {
+    } else {
       print('failed to update');
     }
     final newUser = Provider.of<User>(context, listen: false);
@@ -237,8 +237,9 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
               isoCode: 'KE',
               phoneNumber: user.users.last.phone,
             );
-            final phoneController =
-                TextEditingController(text: currentUserPhone.replaceAll('+254', ''));
+            final phoneController = TextEditingController(
+                text: currentUserPhone.replaceAll('+254', ''));
+
             return Column(
               children: [
                 ClipRRect(
@@ -248,14 +249,14 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                           imageAvailable!,
                           width: screenSize.width * .83,
                           height: screenSize.height / 2.2,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                         )
                       : currentUser!.imageUrl.isNotEmpty
                           ? Image.network(
                               currentUser!.imageUrl,
                               width: screenSize.width * .83,
                               height: screenSize.height / 2.3,
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                             )
                           : const Icon(
                               Icons.person,
@@ -385,10 +386,8 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                       onPressed: () {
                         // Validate will return true if the form is valid, or false if
                         // the form is invalid.
-                      ;
-                        if (_formKey.currentState!
-                            .validate()) {
-
+                        ;
+                        if (_formKey.currentState!.validate()) {
                           // Process data.
                           _update(
                             currentUserFirstname,
