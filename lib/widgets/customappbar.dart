@@ -60,7 +60,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Icon(Icons.chat_bubble_rounded),
-                      Text('Chat Artist')
+                      Text('Chat Shop')
                     ],
                   ),
                 ),

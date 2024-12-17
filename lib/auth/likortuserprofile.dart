@@ -134,16 +134,16 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                       children: [Icon(Icons.home), Text('Home')],
                     ),
                   ),
-                  const PopupMenuItem<int>(
-                    value: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(Icons.store_rounded),
-                        Text('Manage Store')
-                      ],
-                    ),
-                  ),
+                  // const PopupMenuItem<int>(
+                  //   value: 1,
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //     children: [
+                  //       Icon(Icons.store_rounded),
+                  //       Text('Manage Store')
+                  //     ],
+                  //   ),
+                  // ),
                   const PopupMenuItem<int>(
                     value: 2,
                     child: Row(
@@ -171,10 +171,10 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                     Navigator.of(context)
                         .pushReplacementNamed('/likorthomescreen');
                   }
-                  if (value == 1) {
-                    Navigator.of(context)
-                        .pushReplacementNamed('/likortmanagestore');
-                  }
+                  // if (value == 1) {
+                  //   Navigator.of(context)
+                  //       .pushReplacementNamed('/likortmanagestore');
+                  // }
                   print("Selected: $value");
                 }
               });

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/likortusers.dart';
 
 class LikortUserSettings extends StatefulWidget {
   const LikortUserSettings({super.key});
@@ -10,7 +13,7 @@ class LikortUserSettings extends StatefulWidget {
 class _LikortUserSettingsState extends State<LikortUserSettings> {
   @override
   Widget build(BuildContext context) {
-    final List<String> items = ['Change Password', 'Change Delivery Location', 'Create Store', 'Delete Account',];
+    final List<String> items = ['Change Password', 'Change Delivery Location', 'Create Store','Manage Store', 'Delete Account',];
 
     return Scaffold(
       appBar: AppBar(
@@ -32,13 +35,13 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
                       children: [Icon(Icons.home), Text('Home')],
                     ),
                   ),
-                  const PopupMenuItem<int>(
-                    value: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [Icon(Icons.store_rounded), Text('Manage Store')],
-                    ),
-                  ),
+                  // const PopupMenuItem<int>(
+                  //   value: 1,
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //     children: [Icon(Icons.store_rounded), Text('Manage Store')],
+                  //   ),
+                  // ),
                   const PopupMenuItem<int>(
                     value: 2,
                     child: Row(
@@ -66,10 +69,10 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
                     Navigator.of(context)
                         .pushReplacementNamed('/likorthomescreen');
                   }
-                  if (value == 1) {
-                    Navigator.of(context)
-                        .pushReplacementNamed('/likortmanagestore');
-                  }
+                  // if (value == 1) {
+                  //   Navigator.of(context)
+                  //       .pushReplacementNamed('/likortmanagestore');
+                  // }
                   print("Selected: $value");
                 }
               });
@@ -85,9 +88,22 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
               onTap: () {
                 Navigator.of(context).pushNamed('/likortuserprofile');
               },
-              child: const CircleAvatar(
+              child: Provider.of<User>(
+                context,
+                listen: false,
+              ).users.last.imageUrl.isEmpty
+                  ? const CircleAvatar(
                 child: Icon(
                   Icons.person,
+                ),
+              )
+                  : CircleAvatar(
+                backgroundColor: Colors.transparent,
+                backgroundImage: NetworkImage(
+                  Provider.of<User>(
+                    context,
+                    listen: false,
+                  ).users.last.imageUrl,
                 ),
               ),
             ),
