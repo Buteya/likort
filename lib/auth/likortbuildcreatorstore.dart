@@ -1,4 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:likort/models/likortartproduct.dart';
+import 'package:likort/models/likortnotifications.dart';
+import 'package:likort/models/likortorders.dart';
+import 'package:likort/models/likortreview.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
+
+import '../models/likortstore.dart';
+import '../models/likortusers.dart';
 
 class LikortBuildCreatorStore extends StatefulWidget {
   const LikortBuildCreatorStore({super.key});
@@ -40,12 +52,38 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
 
   // Function to handle form submission
   void _submitForm() {
+    var uuid = const Uuid();
+    final id = uuid.v4();
     if (_formKey.currentState!.validate()) {
       // Process the form data
       print('Store Name: ${_storeNameController.text}');
       print('Store Description: ${_storeDescriptionController.text}');
       print('Uploaded Images: $_uploadedImages');
       // ... (your logic to handle form submission)
+      final store = Provider.of<Store>(context, listen: false);
+      try{
+        store.addStore(
+          Store(
+            userId: Provider.of<User>(context, listen: false).users.last.id,
+            created: DateTime.now(),
+            imageUrl: _uploadedImages,
+            reviews: [],
+            id: id,
+            name: _storeNameController.text,
+            description: _storeDescriptionController.text,
+            products: [],
+            notifications: [],
+            orders: [],
+          ),
+        );
+        if(store.stores.isNotEmpty){
+          Navigator.of(context).pushReplacementNamed('/likortmanagestore');
+        }
+      }catch (e){
+        print(e);
+      }
+
+
     }
   }
 
@@ -65,7 +103,6 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
     });
   }
 
-
   // Function to get step color basedon current step
   Color _getStepColor(int step) {
     switch (step) {
@@ -77,6 +114,27 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
         return Colors.orange;
       default:
         return Colors.deepOrange;
+    }
+  }
+
+  final ImagePicker _picker = ImagePicker();
+  List<String> _pickedImages = [];
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _pickedImages.add(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _rePickImage(int index) async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _pickedImages[index] = pickedFile.path;
+      });
     }
   }
 
@@ -104,33 +162,33 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
               ),
             ),
             Expanded(
-              child:  IndexedStack( // Use IndexedStack to display only one step at a time
+              child: IndexedStack(
+                // Use IndexedStack to display only one step at a time
                 index: _currentStep,
                 children: [
                   // Step 1: Store Name
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child:  Visibility(
-                          visible: _currentStep == 0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: TextFormField(
-                              controller: _storeNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Enter Store Name',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a store name';
-                                }
-                                return null;
-                              },
+                      child: Visibility(
+                        visible: _currentStep == 0,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: TextFormField(
+                            controller: _storeNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Enter Store Name',
+                              border: OutlineInputBorder(),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a store name';
+                              }
+                              return null;
+                            },
                           ),
                         ),
-
+                      ),
                     ),
                   ),
                   // Step 2: Store Description
@@ -167,19 +225,59 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
                       child: Column(
                         children: [
                           ElevatedButton(
-                            onPressed: _uploadImage,
-                            child: const Text('Upload Image'),
+                            onPressed:
+                                _pickImage, // Call _pickImage toselect an image
+                            child: const Text('Add Image'),
                           ),
                           const SizedBox(height: 10),
-                          // Display uploaded images (replace with your desired UI)
-                          ..._uploadedImages.map((imagePath) => Text(imagePath)).toList(),
+                          // Display picked images in a row
+                          if (_pickedImages.isNotEmpty)
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * .6,
+                              width: double.infinity, // Adjust height as needed
+                              child: ListView.builder(
+                                itemCount: _pickedImages.length,
+                                itemBuilder: (context, index) {
+                                  final imageFile = _pickedImages[index];
+                                  return GestureDetector(
+                                    onTap: () => _rePickImage(
+                                        index), // Call _rePickImage to re-select
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: imageFile != null
+                                          ? ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(15.0),
+                                              child: Image.network(
+                                                imageFile,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    .3,
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    .6,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            )
+                                          : const Placeholder(
+                                              fallbackWidth: 100,
+                                              fallbackHeight: 100,
+                                            ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          else
+                            const Center(child: Text('No images selected')),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -192,8 +290,10 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
                       child: const Text('Previous'),
                     ),
                   ElevatedButton(
-                    onPressed: _currentStep < totalSteps - 1 ? _nextStep : _submitForm,
-                    child: Text(_currentStep < totalSteps - 1 ? 'Next' : 'Submit'),
+                    onPressed:
+                        _currentStep < totalSteps - 1 ? _nextStep : _submitForm,
+                    child:
+                        Text(_currentStep < totalSteps - 1 ? 'Next' : 'Submit'),
                   ),
                 ],
               ),
