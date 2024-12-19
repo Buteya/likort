@@ -76,6 +76,18 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
             orders: [],
           ),
         );
+        for (final store in store.stores){
+          print(store.id);
+          print(store.created);
+          print(store.reviews);
+          print(store.userId);
+          print(store.products);
+          print(store.description);
+          print(store.name);
+          print(store.orders);
+          print(store.notifications);
+          print(store.imageUrl);
+        }
         if(store.stores.isNotEmpty){
           Navigator.of(context).pushReplacementNamed('/likortmanagestore');
         }
@@ -118,13 +130,12 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
   }
 
   final ImagePicker _picker = ImagePicker();
-  List<String> _pickedImages = [];
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _pickedImages.add(pickedFile.path);
+        _uploadedImages.add(pickedFile.path);
       });
     }
   }
@@ -133,7 +144,7 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _pickedImages[index] = pickedFile.path;
+        _uploadedImages[index] = pickedFile.path;
       });
     }
   }
@@ -231,14 +242,14 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
                           ),
                           const SizedBox(height: 10),
                           // Display picked images in a row
-                          if (_pickedImages.isNotEmpty)
+                          if (_uploadedImages.isNotEmpty)
                             SizedBox(
                               height: MediaQuery.of(context).size.height * .6,
                               width: double.infinity, // Adjust height as needed
                               child: ListView.builder(
-                                itemCount: _pickedImages.length,
+                                itemCount: _uploadedImages.length,
                                 itemBuilder: (context, index) {
-                                  final imageFile = _pickedImages[index];
+                                  final imageFile = _uploadedImages[index];
                                   return GestureDetector(
                                     onTap: () => _rePickImage(
                                         index), // Call _rePickImage to re-select

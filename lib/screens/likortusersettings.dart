@@ -129,6 +129,9 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
                 if(items[index] == 'Create Store'){
                   Navigator.of(context).pushReplacementNamed( '/lkortbuildcreatorstore');
                 }
+                if(items[index] == 'Manage Store'){
+                  Navigator.of(context).pushReplacementNamed( '/likortmanagestore');
+                }
                 if(items[index] == items.last){
                   showDialog(
                     context: context,

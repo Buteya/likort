@@ -12,13 +12,12 @@ class LikortCreateArtProduct extends StatefulWidget {
 
 class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
   final ImagePicker _picker = ImagePicker();
-  final List<File> _images = [];
+  final List<String> _images = [];
   Future<void> _pickImage() async {
-    final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _images.add(File(pickedFile.path));
+        _images.add(pickedFile.path);
       });
     }
   }
@@ -41,7 +40,14 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
               child: const Text('Capture Image'),
             ),
             const SizedBox(height: 16),
-            Image.file(_images[0],height: 400,),
+            _images.isEmpty
+                ? const Center(
+                    child: Icon(Icons.image_rounded),
+                  )
+                : Image.network(
+                    _images[0],
+                    height: 400,
+                  ),
             SizedBox(
               height: MediaQuery.of(context).size.height,
               child: GridView.builder(
@@ -52,7 +58,7 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
                   mainAxisSpacing: 4,
                 ),
                 itemBuilder: (context, index) {
-                  return Image.file(_images[index]);
+                  return Image.network(_images[index]);
                 },
               ),
             ),
