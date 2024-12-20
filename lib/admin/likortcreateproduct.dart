@@ -20,13 +20,11 @@ class _LikortcreateproductState extends State<Likortcreateproduct> {
 
   Future<void> _pickImages() async {
     final ImagePicker picker = ImagePicker();
-    final List<XFile>? pickedFiles = await picker.pickMultiImage();
-    if (pickedFiles != null) {
-      setState(() {
-        _imageFiles = pickedFiles;
-      });
+    final List<XFile> pickedFiles = await picker.pickMultiImage();
+    setState(() {
+      _imageFiles = pickedFiles;
+    });
     }
-  }
 
   @override
   Widget build(BuildContext context) {

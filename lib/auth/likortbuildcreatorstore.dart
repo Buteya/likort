@@ -1,11 +1,6 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:likort/models/likortartproduct.dart';
-import 'package:likort/models/likortnotifications.dart';
-import 'package:likort/models/likortorders.dart';
-import 'package:likort/models/likortreview.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -25,7 +20,7 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
   int _currentStep = 0;
   late TextEditingController _storeNameController;
   late TextEditingController _storeDescriptionController;
-  List<String> _uploadedImages = []; // To store uploaded image paths
+  final List<String> _uploadedImages = []; // To store uploaded image paths
 
   @override
   void initState() {
@@ -94,8 +89,6 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
       }catch (e){
         print(e);
       }
-
-
     }
   }
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,7 +17,7 @@ class LikortUserProfile extends StatefulWidget {
 class _LikortUserProfileState extends State<LikortUserProfile> {
   User? currentUser;
   String? imageAvailable = '';
-  bool _imagePicked = true;
+  final bool _imagePicked = true;
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   final _firstnameController = TextEditingController();
@@ -386,7 +385,6 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                       onPressed: () {
                         // Validate will return true if the form is valid, or false if
                         // the form is invalid.
-                        ;
                         if (_formKey.currentState!.validate()) {
                           // Process data.
                           _update(

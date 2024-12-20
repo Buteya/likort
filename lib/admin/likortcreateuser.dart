@@ -424,8 +424,8 @@ class _LikortCreateUserState extends State<LikortCreateUser> {
                       Navigator.pop(context);
                     },
                   ),
-                  Text('payments'),
-                  Divider(
+                  const Text('payments'),
+                  const Divider(
                     color: Colors.grey, // Set the color of the line
                     thickness: 1.0, // Set the thickness of the line
                     height:
@@ -472,8 +472,8 @@ class _LikortCreateUserState extends State<LikortCreateUser> {
                       Navigator.pop(context);
                     },
                   ),
-                  Text('permission'),
-                  Divider(
+                  const Text('permission'),
+                  const Divider(
                     color: Colors.grey, // Set the color of the line
                     thickness: 1.0, // Set the thickness of the line
                     height:

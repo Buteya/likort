@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../models/likortartproduct.dart';
+import '../models/likortstore.dart';
 import '../widgets/customappbar.dart';
 
 class LikortHomeScreen extends StatefulWidget {
@@ -16,7 +17,6 @@ class LikortHomeScreen extends StatefulWidget {
   final String title;
   final ThemeMode themeMode;
   final Function() toggleThemeMode;
-
 
   @override
   State<LikortHomeScreen> createState() => _LikortHomeScreenState();
@@ -105,6 +105,29 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         .toList();
   }
 
+  String getStoreName(String storeId) {
+    // Find the store with the matching storeId
+    final store = Provider.of<Store>(context).stores.firstWhere(
+          (store) => store.id == storeId,
+          orElse: () => Store(
+              userId: '',
+              created: DateTime.now(),
+              imageUrl: [],
+              reviews: [],
+              id: '',
+              name: '',
+              description: '',
+              products: [],
+              notifications: [],
+              orders: []), // Handle case where store is not found
+        );
+
+    // Return the store name if found, otherwise return an empty string or a default value
+    return store != null
+        ? store.name
+        : ''; // Or a default value like 'Unknown Store'
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get the screen size
@@ -117,16 +140,15 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     final ThemeMode appThemeMode = widget.themeMode;
     final Function() toggleThemeMode = widget.toggleThemeMode;
 
-
     return Scaffold(
       appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: CustomAppBar(
-              appTitle: appTitle,
-              appThemeMode: appThemeMode,
-              toggleThemeMode: toggleThemeMode,
-
-          ),),
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: CustomAppBar(
+          appTitle: appTitle,
+          appThemeMode: appThemeMode,
+          toggleThemeMode: toggleThemeMode,
+        ),
+      ),
       body: Column(
         children: [
           AnimatedOpacity(
@@ -316,74 +338,90 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                       .size
                       .height // Adjust height when search bar is visible
                   : MediaQuery.of(context).size.height,
-              child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: 100,
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.of(context).pushNamed('/likortproductdetail');
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(15.0),
-                            child: Image.network(
-                              'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                              width: screenSize.width * .83,
-                              height: screenSize.height / 2.66,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: InkWell(
-                                  onTap: () {
-                                    // product
-                                    //     // .toggleFavorite(product.products[0].id);
-                                  },
-                                  child: const Icon(Icons.favorite_rounded
-                                      // product.products[0].isFavorite
-                                      //     ? Icons.favorite
-                                      //     : Icons.favorite_border,
-                                      // color: product.products[0].isFavorite
-                                      //     ? Colors.red
-                                      //     : Colors.grey,
-                                      ),
+              child: Consumer<Product>(builder: (context, product, child) {
+                return product.products.isEmpty
+                    ? const Center(
+                        child: Text('No Art to display'),
+                      )
+                    : GridView.builder(
+                        controller: _scrollController,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // Number of items per row
+                          crossAxisSpacing: 8.0, // Spacing between columns
+                          mainAxisSpacing: 8.0, // Spacing between rows
+                        ),
+                        itemCount: product.products.length,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            onTap: () {
+                              Navigator.of(context)
+                                  .pushNamed('/likortproductdetail');
+                            },
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  child: Image.network(
+                                    product.products[index].imageUrls[0],
+                                    width: screenSize.width * .83,
+                                    height: screenSize.height / 2.66,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * .1,
-                              )
-                            ],
-                          ),
-                          const Text(
-                            'paint brushes',
-                            style: TextStyle(
-                              fontSize: 14,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: InkWell(
+                                        onTap: () {
+                                          // product
+                                          //     // .toggleFavorite(product.products[0].id);
+                                        },
+                                        child: const Icon(Icons.favorite_rounded
+                                            // product.products[0].isFavorite
+                                            //     ? Icons.favorite
+                                            //     : Icons.favorite_border,
+                                            // color: product.products[0].isFavorite
+                                            //     ? Colors.red
+                                            //     : Colors.grey,
+                                            ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          .1,
+                                    )
+                                  ],
+                                ),
+                                Text(
+                                  product.products[index].name,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  getStoreName(product.products[index].storeId),
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  '\$${product.products[index].price}',
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * .1,
+                                )
+                              ],
                             ),
-                          ),
-                          const Text(
-                            'anne\'s shop',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            '\$99',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * .1,
-                          )
-                        ],
-                      ),
-                    );
-                  }),
+                          );
+                        });
+              }),
             ),
           ),
         ],

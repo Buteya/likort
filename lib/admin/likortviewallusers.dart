@@ -119,8 +119,8 @@ class _LikortViewAllUsersState extends State<LikortViewAllUsers> {
                 ),
               ),
             ),
-            Text('user'),
-            Divider(
+            const Text('user'),
+            const Divider(
               color: Colors.grey, // Set the color of the line
               thickness: 1.0, // Set the thickness of the line
               height: 10.0, // Set the height of the line (including spacing)
@@ -153,8 +153,8 @@ class _LikortViewAllUsersState extends State<LikortViewAllUsers> {
                 });
               },
             ),
-            Text('store'),
-            Divider(
+            const Text('store'),
+            const Divider(
               color: Colors.grey, // Set the color of the line
               thickness: 1.0, // Set the thickness of the line
               height: 10.0, // Set the height of the line (including spacing)
@@ -181,8 +181,8 @@ class _LikortViewAllUsersState extends State<LikortViewAllUsers> {
                 Navigator.pop(context);
               },
             ),
-            Text('order'),
-            Divider(
+            const Text('order'),
+            const Divider(
               color: Colors.grey, // Set the color of the line
               thickness: 1.0, // Set the thickness of the line
               height: 10.0, // Set the height of the line (including spacing)
@@ -209,8 +209,8 @@ class _LikortViewAllUsersState extends State<LikortViewAllUsers> {
                 Navigator.pop(context);
               },
             ),
-            Text('payments'),
-            Divider(
+            const Text('payments'),
+            const Divider(
               color: Colors.grey, // Set the color of the line
               thickness: 1.0, // Set the thickness of the line
               height: 10.0, // Set the height of the line (including spacing)
@@ -227,8 +227,8 @@ class _LikortViewAllUsersState extends State<LikortViewAllUsers> {
                 Navigator.pop(context);
               },
             ),
-            Text('role'),
-            Divider(
+            const Text('role'),
+            const Divider(
               color: Colors.grey, // Set the color of the line
               thickness: 1.0, // Set the thickness of the line
               height: 10.0, // Set the height of the line (including spacing)
@@ -255,8 +255,8 @@ class _LikortViewAllUsersState extends State<LikortViewAllUsers> {
                 Navigator.pop(context);
               },
             ),
-            Text('permission'),
-            Divider(
+            const Text('permission'),
+            const Divider(
               color: Colors.grey, // Set the color of the line
               thickness: 1.0, // Set the thickness of the line
               height: 10.0, // Set the height of the line (including spacing)

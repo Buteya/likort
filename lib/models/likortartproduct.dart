@@ -76,6 +76,32 @@ class Product extends ChangeNotifier {
     };
   }
 
+   add(Product product) {
+    _products.add(product);
+    // This call tells the widgets that are listening to this model to rebuild.
+    notifyListeners();
+  }
+  void removeProduct(int index) {
+    _products.removeAt(index);
+    notifyListeners();
+  }
+
+  void updateProduct(Product updatedProduct) {
+    _products[_products.length - 1] = updatedProduct;
+    notifyListeners();
+  }
+
+  void updateSingleProduct(Product updatedProduct, int index) {
+    _products[index] = updatedProduct;
+    notifyListeners();
+  }
+
+  void removeAll() {
+    _products.clear();
+    // This call tells the widgets that are listening to this model to rebuild.
+    notifyListeners();
+  }
+
   @override
   String toString() {
     return 'Product(id: $id, name: $name, description: $description, price: $price, imageUrls: $imageUrls,shop:$storeId,)';
