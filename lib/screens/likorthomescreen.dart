@@ -138,7 +138,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     final ThemeMode appThemeMode = widget.themeMode;
     final Function() toggleThemeMode = widget.toggleThemeMode;
     final productProvider = Provider.of<Product>(context);
-    final products = productProvider.products; // Get the list of products
+
 
     return Scaffold(
       appBar: PreferredSize(
