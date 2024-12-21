@@ -26,24 +26,34 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   final _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _searchBarVisible = true;
-  final List<String> _items = [
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-    'Item 5'
-  ]; // Your data
-  List<String> _filteredItems = [];
-  String _selectedCategory = 'All'; // Initial filter category
+  String _selectedCategory = "All"; // Initial filter category
   final RangeValues _priceRange = const RangeValues(0, 100);
+  late FocusNode _searchFocusNode;
+  List<Product> filteredProducts = [];
+  List<Product> _categorySearch = [];
+  Set<String> get categories =>
+      _categorySearch.map((product) => product.typeOfArt).toSet();
 
   @override
   void initState() {
     super.initState();
-    _filteredItems = _items;
+    _categorySearch = Provider.of<Product>(context, listen: false).products;
+    filteredProducts = Provider.of<Product>(context, listen: false).products;
     _scrollController.addListener(_scrollListener);
     Provider.of<Product>(context, listen: false)
         .favoriteProducts; // Load favorites on initialization
+  }
+
+  void _filterProducts(String query) {
+    final List<Product> filtered =
+        Provider.of<Product>(context, listen: false).products.where((product) {
+      final productNameLower = product.name.toLowerCase();
+      final queryLower = query.toLowerCase();
+      return productNameLower.contains(queryLower);
+    }).toList();
+    setState(() {
+      filteredProducts = filtered;
+    });
   }
 
   @override
@@ -55,20 +65,16 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
 
   void _applyFilters() {
     setState(() {
-      _filteredItems = _items.where((item) {
-        // Category filter
-        if (_selectedCategory != 'All' && item != _selectedCategory) {
-          return false;
-        }
-        // Price range filter (example - assuming items have prices)
-        // Replace with your actual price filtering logic
-        // final itemPrice = getItemPrice(item); // Get price of the item
-        // if (itemPrice < _priceRange.start || itemPrice > _priceRange.end) {
-        //   return false;
-        // }
-
-        return true;
-      }).toList();
+      if (_selectedCategory == 'All') {
+        filteredProducts =
+            Provider.of<Product>(context, listen: false).products;
+      } else {
+        filteredProducts = Provider.of<Product>(context, listen: false)
+            .products
+            .where((item) {
+          return item.typeOfArt == _selectedCategory;
+        }).toList();
+      }
     });
   }
 
@@ -89,14 +95,6 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     }
   }
 
-  void _filterItems(String query) {
-    setState(() {
-      _filteredItems = _items
-          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    });
-  }
-
   // Search function
   List<Product> searchProductsByType(
       List<Product> allProducts, String productType) {
@@ -107,7 +105,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
 
   String getStoreName(String storeId) {
     // Find the store with the matching storeId
-    final store = Provider.of<Store>(context).stores.firstWhere(
+    final store = Provider.of<Store>(context, listen: false).stores.firstWhere(
           (store) => store.id == storeId,
           orElse: () => Store(
               userId: '',
@@ -139,6 +137,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     final String appTitle = widget.title;
     final ThemeMode appThemeMode = widget.themeMode;
     final Function() toggleThemeMode = widget.toggleThemeMode;
+    final productProvider = Provider.of<Product>(context);
+    final products = productProvider.products; // Get the list of products
 
     return Scaffold(
       appBar: PreferredSize(
@@ -189,30 +189,37 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                           child: Row(
                             children: [
                               Flexible(
-                                child: TextField(
-                                  controller: _searchController,
-                                  decoration: InputDecoration(
-                                    hintStyle: TextStyle(
-                                      color: isDark
-                                          ? Colors.white54
-                                          : Colors.black54,
-                                    ),
-                                    hintText: 'Search...',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    filled: true,
-                                    fillColor: isDark
-                                        ? Colors.grey[800]
-                                        : Colors.grey[200],
-                                    prefixIcon: const Icon(
-                                      Icons.search,
-                                    ),
-                                  ),
-                                  onChanged: (query) {
-                                    _filterItems(query);
+                                child: GestureDetector(
+                                  onTap: () {
+                                    FocusScope.of(context).requestFocus(
+                                        _searchFocusNode); // _searchFocusNode is a FocusNode
                                   },
+                                  child: TextField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      hintStyle: TextStyle(
+                                        color: isDark
+                                            ? Colors.white54
+                                            : Colors.black54,
+                                      ),
+                                      hintText: 'Search...',
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      filled: true,
+                                      fillColor: isDark
+                                          ? Colors.grey[800]
+                                          : Colors.grey[200],
+                                      prefixIcon: const Icon(
+                                        Icons.search,
+                                      ),
+                                    ),
+                                    onChanged: (query) {
+                                      _filterProducts(query);
+                                    },
+                                  ),
                                 ),
                               ),
                               InkWell(
@@ -221,22 +228,22 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                       context: context,
                                       builder: (context) {
                                         return AlertDialog(
-                                          title: const Text('Filter Options'),
+                                          title: const Text(
+                                              'Filter by type of art'),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               DropdownButton<String>(
                                                 value: _selectedCategory,
-                                                items: [
-                                                  'All',
-                                                  'Fruits',
-                                                  'Vegetables'
-                                                ]
-                                                    .map((category) =>
-                                                        DropdownMenuItem(
-                                                          value: category,
-                                                          child: Text(category),
-                                                        ))
+                                                items: categories
+                                                    .map(
+                                                      (category) =>
+                                                          DropdownMenuItem<
+                                                              String>(
+                                                        value: category,
+                                                        child: Text(category),
+                                                      ),
+                                                    )
                                                     .toList(),
                                                 onChanged: (value) {
                                                   setState(() {
@@ -351,8 +358,9 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                           crossAxisSpacing: 8.0, // Spacing between columns
                           mainAxisSpacing: 8.0, // Spacing between rows
                         ),
-                        itemCount: product.products.length,
+                        itemCount: filteredProducts.length,
                         itemBuilder: (context, index) {
+                          final product = filteredProducts[index];
                           return InkWell(
                             onTap: () {
                               Navigator.of(context)
@@ -365,7 +373,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(15.0),
                                   child: Image.network(
-                                    product.products[index].imageUrls[0],
+                                    color: Colors.black45,
+                                    product.imageUrls[0],
                                     width: screenSize.width * .83,
                                     height: screenSize.height / 2.66,
                                     fit: BoxFit.contain,
@@ -398,19 +407,19 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                   ],
                                 ),
                                 Text(
-                                  product.products[index].name,
+                                  product.name,
                                   style: const TextStyle(
                                     fontSize: 14,
                                   ),
                                 ),
                                 Text(
-                                  getStoreName(product.products[index].storeId),
+                                  getStoreName(product.storeId),
                                   style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  '\$${product.products[index].price}',
+                                  '\$${product.price}',
                                   style: Theme.of(context).textTheme.bodyLarge,
                                 ),
                                 SizedBox(
