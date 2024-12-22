@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../models/likortartproduct.dart';
 import '../models/likortstore.dart';
+import '../models/likortusers.dart';
 import '../widgets/customappbar.dart';
 
 class LikortHomeScreen extends StatefulWidget {
@@ -26,8 +27,22 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   final _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _searchBarVisible = true;
-  String _selectedCategory = "All"; // Initial filter category
-  final RangeValues _priceRange = const RangeValues(0, 100);
+  String? _selectedCategory; // Initial filter category
+  double get minPrice => filteredProducts
+      .map((product) => product.price)
+      .reduce((a, b) => a < b ? a : b);
+  double get maxPrice => filteredProducts
+      .map((product) => product.price)
+      .reduce((a, b) => a > b ? a : b);
+  RangeValues _priceRange = const RangeValues(0, 0);
+  RangeValues get priceRange {
+    if (_priceRange.start == 0 && _priceRange.end == 0) {
+      _priceRange = RangeValues(
+          minPrice, maxPrice); // Initialize with actual min and max prices
+    }
+    return _priceRange;
+  }
+
   late FocusNode _searchFocusNode;
   List<Product> filteredProducts = [];
   List<Product> _categorySearch = [];
@@ -69,9 +84,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         filteredProducts =
             Provider.of<Product>(context, listen: false).products;
       } else {
-        filteredProducts = Provider.of<Product>(context, listen: false)
-            .products
-            .where((item) {
+        filteredProducts =
+            Provider.of<Product>(context, listen: false).products.where((item) {
           return item.typeOfArt == _selectedCategory;
         }).toList();
       }
@@ -138,7 +152,6 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     final ThemeMode appThemeMode = widget.themeMode;
     final Function() toggleThemeMode = widget.toggleThemeMode;
     final productProvider = Provider.of<Product>(context);
-
 
     return Scaffold(
       appBar: PreferredSize(
@@ -253,15 +266,32 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                               ),
                                               // Price range slider (example)
                                               // RangeSlider(
-                                              //   values: _priceRange,
-                                              //   min: 0,
-                                              //   max: 100,
-                                              //   onChanged: (values) {
+                                              //   values: priceRange,
+                                              //   min: minPrice,
+                                              //   max: maxPrice,
+                                              //   divisions: (maxPrice - minPrice).toInt(), // Ensure divisions are appropriate for the range
+                                              //   labels: RangeLabels(
+                                              //     '${priceRange.start}',
+                                              //     '${priceRange.end}',
+                                              //   ),
+                                              //   onChanged: (RangeValues newRange) {
                                               //     setState(() {
-                                              //       _priceRange = values;
+                                              //       // Ensure the new values are within the valid range
+                                              //       if (newRange.start >= minPrice && newRange.end <= maxPrice) {
+                                              //         _priceRange = newRange;
+                                              //         // Uncomment this line if you need to apply filters or perform other actions
+                                              //         // _applyFilters();
+                                              //
+                                              //         // Assuming filteredProducts is a list and your Product model has a price field
+                                              //         filteredProducts = Provider.of<Product>(context, listen: false)
+                                              //             .products
+                                              //             .where((item) {
+                                              //           return item.price >= newRange.start && item.price <= newRange.end;
+                                              //         }).toList();
+                                              //       }
                                               //     });
                                               //   },
-                                              // ),
+                                              // )
                                             ],
                                           ),
                                           actions: [
@@ -373,11 +403,10 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(15.0),
                                   child: Image.network(
-                                    color: Colors.black45,
                                     product.imageUrls[0],
                                     width: screenSize.width * .83,
                                     height: screenSize.height / 2.66,
-                                    fit: BoxFit.contain,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                                 Row(
@@ -389,15 +418,61 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                         onTap: () {
                                           // product
                                           //     // .toggleFavorite(product.products[0].id);
+                                          setState(() {
+                                            List<Product> favorites = [];
+                                            final prod = filteredProducts
+                                                .firstWhere((prod) =>
+                                                    prod.id == product.id);
+                                            if (prod.isFavorite) {
+                                              prod.isFavorite = false;
+                                              favorites.remove(prod);
+                                            } else {
+                                              prod.isFavorite = true;
+                                              favorites.add(prod);
+                                              final user =
+                                                  Provider.of<User>(context,listen: false);
+                                              user.updateUser(User(
+                                                id: user.users.last.id,
+                                                firstname:
+                                                    user.users.last.firstname,
+                                                lastname:
+                                                    user.users.last.lastname,
+                                                email: user.users.last.email,
+                                                password:
+                                                    user.users.last.password,
+                                                phone: user.users.last.phone,
+                                                latitude:
+                                                    user.users.last.latitude,
+                                                longitude:
+                                                    user.users.last.longitude,
+                                                imageUrl:
+                                                    user.users.last.imageUrl,
+                                                storeId:
+                                                    user.users.last.storeId,
+                                                reviews:
+                                                    user.users.last.reviews,
+                                                favorites: favorites,
+                                                notifications: user
+                                                    .users.last.notifications,
+                                                created:
+                                                    user.users.last.created,
+                                              ));
+                                            }
+                                          });
                                         },
-                                        child: const Icon(Icons.favorite_rounded
-                                            // product.products[0].isFavorite
-                                            //     ? Icons.favorite
-                                            //     : Icons.favorite_border,
-                                            // color: product.products[0].isFavorite
-                                            //     ? Colors.red
-                                            //     : Colors.grey,
-                                            ),
+                                        child: product.isFavorite
+                                            ? Icon(
+                                                Icons.favorite_rounded,
+                                                color: product.isFavorite
+                                                    ? Colors.red
+                                                    : Colors.grey,
+                                              )
+                                            : Icon(
+                                                Icons.favorite_border_rounded,
+                                                color: product.isFavorite
+                                                    ? Colors.red
+                                                    : Colors.grey,
+                                              ),
                                       ),
                                     ),
                                     SizedBox(

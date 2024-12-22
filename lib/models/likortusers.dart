@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:likort/models/likortreview.dart';
 
+import 'likortartproduct.dart';
+
 
 class User extends ChangeNotifier {
   final String id;
@@ -16,7 +18,7 @@ class User extends ChangeNotifier {
   final double longitude;
   final String storeId;
   final List<Review> reviews;
-  final List<String> favorites;
+  final List<Product> favorites;
   final String imageUrl;
   final List<String> notifications;
   final DateTime created;
