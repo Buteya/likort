@@ -50,6 +50,12 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
     final favoriteItems = product.favoriteProducts
         .where((products) => product.favoriteProducts.contains(product.id))
         .toList();
+    for (final prod in Provider.of<User>(context).users.last.favorites){
+      print(prod.isFavorite);
+      print(prod.id);
+      print(prod.typeOfArt);
+    }
+    List<Product> favorites = [];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorites'),
@@ -57,7 +63,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
           Navigator.of(context).pushReplacementNamed('/likorthomescreen');
         }, icon: const Icon(Icons.arrow_circle_left_outlined)),
       ),
-      body: favoriteItems.isEmpty
+      body: Provider.of<User>(context).users.last.favorites.isEmpty
           ? const Center(
               child: Text('No favorites yet.'),
             )
@@ -100,13 +106,26 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                             // product
                             //     // .toggleFavorite(product.products[0].id);
                             setState(() {
-                              List<Product> favorites = [];
-                              final prod = Provider.of<User>(context).users.last.favorites
+
+                              final prod = Provider.of<User>(context,listen: false).users.last.favorites
                                   .firstWhere((prod) =>
                               prod.id == product.id);
+                              print(prod);
+                              print(Provider.of<User>(context,listen: false).users.last.favorites);
                               if (prod.isFavorite) {
-                                prod.isFavorite = false;
-                                favorites.remove(prod);
+                                final prodIndex = Provider.of<User>(context,listen: false).users.last.favorites.indexWhere((itemIndex) => itemIndex.id == prod.id);
+                                print(prodIndex);
+                                if (prodIndex != -1) {
+                                  // Ensure prodIndex is valid
+
+                                    prod.isFavorite = false;
+                                    Provider.of<User>(context,listen: false).users.last.favorites.removeAt(prodIndex);
+
+                                } else {
+                                  // Handle the case when the product is not found in the favorites
+                                  print('Product not found in favorites.');
+                                }
+
                               } else {
                                 prod.isFavorite = true;
                                 favorites.add(prod);
@@ -150,6 +169,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                           )
                               : Icon(
                             Icons.favorite_border_rounded,
+
                             color: product.isFavorite
                                 ? Colors.red
                                 : Colors.grey,
