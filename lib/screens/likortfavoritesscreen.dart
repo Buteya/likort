@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/likortartproduct.dart';
+import '../models/likortfavorites.dart';
 import '../models/likortstore.dart';
 import '../models/likortusers.dart';
 
@@ -47,15 +49,18 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
     var screenSize = MediaQuery.of(context).size;
     final product = Provider.of<Product>(context);
     // Filter items to get only favorites
-    final favoriteItems = product.favoriteProducts
-        .where((products) => product.favoriteProducts.contains(product.id))
-        .toList();
+    // final favoriteItems = product.favoriteProducts
+    //     .where((products) => product.favoriteProducts.contains(product.id))
+    //     .toList();
     for (final prod in Provider.of<User>(context).users.last.favorites){
       print(prod.isFavorite);
       print(prod.id);
       print(prod.typeOfArt);
     }
-    List<Product> favorites = [];
+    final favorites = Provider.of<Favorites>(
+      context,
+      listen: false,
+    );
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorites'),
@@ -63,7 +68,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
           Navigator.of(context).pushReplacementNamed('/likorthomescreen');
         }, icon: const Icon(Icons.arrow_circle_left_outlined)),
       ),
-      body: Provider.of<User>(context).users.last.favorites.isEmpty
+      body: Provider.of<Favorites>(context).favorites.isEmpty
           ? const Center(
               child: Text('No favorites yet.'),
             )
@@ -75,9 +80,16 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
             crossAxisSpacing: 8.0, // Spacing between columns
             mainAxisSpacing: 8.0, // Spacing between rows
           ),
-          itemCount: Provider.of<User>(context).users.last.favorites.length,
+          itemCount: Provider.of<Favorites>(context, listen: false)
+              .favorites
+              .expand((fav) => fav.favoriteProducts)
+              .length,
+
           itemBuilder: (context, index) {
-            final product = Provider.of<User>(context).users.last.favorites[index];
+            final product = Provider.of<Favorites>(context, listen: false)
+                .favorites
+                .expand((fav) => fav.favoriteProducts)
+                .toList()[index];
             return InkWell(
               onTap: () {
                 Navigator.of(context)
@@ -101,76 +113,71 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: InkWell(
+                        child:  InkWell(
                           onTap: () {
                             // product
                             //     // .toggleFavorite(product.products[0].id);
                             setState(() {
-
-                              final prod = Provider.of<User>(context,listen: false).users.last.favorites
-                                  .firstWhere((prod) =>
-                              prod.id == product.id);
-                              print(prod);
-                              print(Provider.of<User>(context,listen: false).users.last.favorites);
-                              if (prod.isFavorite) {
-                                final prodIndex = Provider.of<User>(context,listen: false).users.last.favorites.indexWhere((itemIndex) => itemIndex.id == prod.id);
-                                print(prodIndex);
-                                if (prodIndex != -1) {
-                                  // Ensure prodIndex is valid
-
-                                    prod.isFavorite = false;
-                                    Provider.of<User>(context,listen: false).users.last.favorites.removeAt(prodIndex);
-
-                                } else {
-                                  // Handle the case when the product is not found in the favorites
-                                  print('Product not found in favorites.');
-                                }
-
-                              } else {
-                                prod.isFavorite = true;
-                                favorites.add(prod);
-                                final user =
-                                Provider.of<User>(context,listen: false);
-                                user.updateUser(User(
-                                  id: user.users.last.id,
-                                  firstname:
-                                  user.users.last.firstname,
-                                  lastname:
-                                  user.users.last.lastname,
-                                  email: user.users.last.email,
-                                  password:
-                                  user.users.last.password,
-                                  phone: user.users.last.phone,
-                                  latitude:
-                                  user.users.last.latitude,
-                                  longitude:
-                                  user.users.last.longitude,
-                                  imageUrl:
-                                  user.users.last.imageUrl,
-                                  storeId:
-                                  user.users.last.storeId,
-                                  reviews:
-                                  user.users.last.reviews,
-                                  favorites: favorites,
-                                  notifications: user
-                                      .users.last.notifications,
-                                  created:
-                                  user.users.last.created,
+                              final favoriteProducts =
+                              Provider.of<Favorites>(
+                                context,listen: false,)
+                                  .favorites
+                                  .expand((fav) => fav
+                                  .favoriteProducts)
+                                  .toList();
+                              final productIndex =
+                              favoriteProducts.indexWhere(
+                                      (prod) =>
+                                  prod.id ==
+                                      product.id);
+                              if (!favoriteProducts
+                                  .contains(product)) {
+                                favoriteProducts.add(product);
+                                favorites.add(Favorites(
+                                  id: const Uuid().v4(),
+                                  userId: Provider.of<User>(
+                                      context,
+                                      listen: false)
+                                      .users
+                                      .last
+                                      .id,
+                                  favoriteProducts:
+                                  favoriteProducts,
                                 ));
+                              }else if(favoriteProducts.contains(product)){
+                                setState(() {
+                                  Provider.of<Favorites>(
+                                    context,listen: false,)
+                                      .favorites
+                                      .expand((fav) => fav
+                                      .favoriteProducts)
+                                      .toList().removeAt(productIndex);
+                                  favorites.removeFavorite(productIndex);
+
+                                });
                               }
                             });
                           },
-                          child: product.isFavorite
+                          child: favorites.favorites.any(
+                                  (fav) => fav
+                                  .favoriteProducts
+                                  .contains(product))
                               ? Icon(
                             Icons.favorite_rounded,
-                            color: product.isFavorite
+                            color:  favorites.favorites.any(
+                                    (fav) => fav
+                                    .favoriteProducts
+                                    .contains(product))
                                 ? Colors.red
                                 : Colors.grey,
                           )
                               : Icon(
-                            Icons.favorite_border_rounded,
-
-                            color: product.isFavorite
+                            Icons
+                                .favorite_border_rounded,
+                            color:  favorites.favorites.any(
+                                    (fav) => fav
+                                    .favoriteProducts
+                                    .contains(product))
                                 ? Colors.red
                                 : Colors.grey,
                           ),

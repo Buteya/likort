@@ -14,6 +14,7 @@ import 'package:likort/auth/likortsignup.dart';
 import 'package:likort/auth/likortuserprofile.dart';
 import 'package:likort/models/likortartproduct.dart';
 import 'package:likort/models/likortcartitem.dart';
+import 'package:likort/models/likortfavorites.dart';
 import 'package:likort/models/likortnotifications.dart';
 import 'package:likort/models/likortorders.dart';
 import 'package:likort/models/likortpayment.dart';
@@ -142,6 +143,13 @@ void main() async {
               stores: [],
             ),
           ),
+          ChangeNotifierProvider(
+            create: (context) => Favorites(
+              id: '',
+              userId: '',
+              favoriteProducts: [],
+            ),
+          ),
         ],
         child: const MyApp(),
       ),
@@ -201,10 +209,10 @@ class _MyAppState extends State<MyApp> {
           _saveThemeMode('system');
           break;
         case ThemeMode.system:
-        default:
-          _themeMode = ThemeMode.light;
-          _saveThemeMode('light');
-          break;
+        // default:
+        //   _themeMode = ThemeMode.light;
+        //   _saveThemeMode('light');
+        //   break;
       }
     });
   }
@@ -279,11 +287,11 @@ class _MyAppState extends State<MyApp> {
         '/likortcontactsupport': (context) =>
             const LikortContactSupportScreen(),
         '/likortusersettings': (context) => const LikortUserSettings(),
-        '/likortadminhome' : (context) => const LikortAdminHome(),
-        '/likortmanagestore' : (context) => const LikortManageStoreScreen(),
-        '/likortviewallusers' : (context) => const LikortViewAllUsers(),
-        '/likortcreateuser' : (context) => const LikortCreateUser(),
-        '/likortcreateproduct' : (context) => const Likortcreateproduct(),
+        '/likortadminhome': (context) => const LikortAdminHome(),
+        '/likortmanagestore': (context) => const LikortManageStoreScreen(),
+        '/likortviewallusers': (context) => const LikortViewAllUsers(),
+        '/likortcreateuser': (context) => const LikortCreateUser(),
+        '/likortcreateproduct': (context) => const Likortcreateproduct(),
       },
     );
   }

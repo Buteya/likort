@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/likortartproduct.dart';
+
+import '../models/likortfavorites.dart';
 import '../models/likortstore.dart';
 import '../models/likortusers.dart';
 import '../widgets/customappbar.dart';
@@ -34,7 +37,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   double get maxPrice => filteredProducts
       .map((product) => product.price)
       .reduce((a, b) => a > b ? a : b);
-  RangeValues _priceRange = const RangeValues(0, 0);
+  RangeValues _priceRange = const RangeValues(0, 100);
   RangeValues get priceRange {
     if (_priceRange.start == 0 && _priceRange.end == 0) {
       _priceRange = RangeValues(
@@ -145,13 +148,30 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     // Get the screen size
     var screenSize = MediaQuery.of(context).size;
     // Get the screen orientation
-    var orientation = MediaQuery.of(context).orientation;
+    // var orientation = MediaQuery.of(context).orientation;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final product = Provider.of<Product>(context, listen: false);
+    // final product = Provider.of<Product>(context, listen: false);
     final String appTitle = widget.title;
     final ThemeMode appThemeMode = widget.themeMode;
     final Function() toggleThemeMode = widget.toggleThemeMode;
-    final productProvider = Provider.of<Product>(context);
+    // final productProvider = Provider.of<Product>(context);
+    final productList = Provider.of<Product>(context, listen: false).products;
+    // double minPrice = productList.isNotEmpty
+    //     ? productList
+    //         .map((product) => product.price)
+    //         .reduce((a, b) => a < b ? a : b)
+    //     : 0.0;
+    double maxPrice = productList.isNotEmpty
+        ? productList
+            .map((product) => product.price)
+            .reduce((a, b) => a > b ? a : b)
+        : 100.0;
+    RangeValues currentRangeValues = const RangeValues(0, 0);
+    final favorites = Provider.of<Favorites>(
+      context,
+      listen: false,
+    );
+    // List<Product> favoriteProducts = [];
 
     return Scaffold(
       appBar: PreferredSize(
@@ -241,11 +261,12 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                       context: context,
                                       builder: (context) {
                                         return AlertDialog(
-                                          title: const Text(
-                                              'Filter by type of art'),
+                                          title: const Text('Filter art by :'),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
+                                              const Text('Type of art'),
+                                              const Divider(),
                                               DropdownButton<String>(
                                                 value: _selectedCategory,
                                                 items: categories
@@ -264,34 +285,46 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                   });
                                                 },
                                               ),
-                                              // Price range slider (example)
-                                              // RangeSlider(
-                                              //   values: priceRange,
-                                              //   min: minPrice,
-                                              //   max: maxPrice,
-                                              //   divisions: (maxPrice - minPrice).toInt(), // Ensure divisions are appropriate for the range
-                                              //   labels: RangeLabels(
-                                              //     '${priceRange.start}',
-                                              //     '${priceRange.end}',
-                                              //   ),
-                                              //   onChanged: (RangeValues newRange) {
-                                              //     setState(() {
-                                              //       // Ensure the new values are within the valid range
-                                              //       if (newRange.start >= minPrice && newRange.end <= maxPrice) {
-                                              //         _priceRange = newRange;
-                                              //         // Uncomment this line if you need to apply filters or perform other actions
-                                              //         // _applyFilters();
-                                              //
-                                              //         // Assuming filteredProducts is a list and your Product model has a price field
-                                              //         filteredProducts = Provider.of<Product>(context, listen: false)
-                                              //             .products
-                                              //             .where((item) {
-                                              //           return item.price >= newRange.start && item.price <= newRange.end;
-                                              //         }).toList();
-                                              //       }
-                                              //     });
-                                              //   },
-                                              // )
+                                              SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    .01,
+                                              ),
+                                              const Text('Price'),
+                                              const Divider(),
+                                              //Price range slider (example)
+                                              RangeSlider(
+                                                values: currentRangeValues,
+                                                max: maxPrice,
+                                                divisions: 100,
+                                                labels: RangeLabels(
+                                                  currentRangeValues.start
+                                                      .round()
+                                                      .toString(),
+                                                  currentRangeValues.end
+                                                      .round()
+                                                      .toString(),
+                                                ),
+                                                onChanged:
+                                                    (RangeValues values) {
+                                                  setState(() {
+                                                    currentRangeValues =
+                                                        values;
+                                                    filteredProducts =
+                                                        Provider.of<Product>(
+                                                                context,
+                                                                listen: false)
+                                                            .products
+                                                            .where((item) {
+                                                      return item.price ==
+                                                          double.tryParse(
+                                                              currentRangeValues
+                                                                  .toString());
+                                                    }).toList();
+                                                  });
+                                                },
+                                              )
                                             ],
                                           ),
                                           actions: [
@@ -380,131 +413,148 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                     ? const Center(
                         child: Text('No Art to display'),
                       )
-                    : GridView.builder(
-                        controller: _scrollController,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // Number of items per row
-                          crossAxisSpacing: 8.0, // Spacing between columns
-                          mainAxisSpacing: 8.0, // Spacing between rows
-                        ),
-                        itemCount: filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = filteredProducts[index];
-                          return InkWell(
-                            onTap: () {
-                              Navigator.of(context)
-                                  .pushNamed('/likortproductdetail');
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(15.0),
-                                  child: Image.network(
-                                    product.imageUrls[0],
-                                    width: screenSize.width * .83,
-                                    height: screenSize.height / 2.66,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: GridView.builder(
+                            controller: _scrollController,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2, // Number of items per row
+                              crossAxisSpacing: 8.0, // Spacing between columns
+                              mainAxisSpacing: 8.0, // Spacing between rows
+                            ),
+                            itemCount: filteredProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = filteredProducts[index];
+                              return InkWell(
+                                onTap: () {
+                                  Navigator.of(context)
+                                      .pushNamed('/likortproductdetail');
+                                },
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: InkWell(
-                                        onTap: () {
-                                          // product
-                                          //     // .toggleFavorite(product.products[0].id);
-                                          setState(() {
-                                            List<Product> favorites = [];
-                                            final prod = filteredProducts
-                                                .firstWhere((prod) =>
-                                                    prod.id == product.id);
-                                            if (prod.isFavorite) {
-                                              prod.isFavorite = false;
-                                              favorites.remove(prod);
-                                            } else {
-                                              prod.isFavorite = true;
-                                              favorites.add(prod);
-                                              final user =
-                                                  Provider.of<User>(context,listen: false);
-                                              user.updateUser(User(
-                                                id: user.users.last.id,
-                                                firstname:
-                                                    user.users.last.firstname,
-                                                lastname:
-                                                    user.users.last.lastname,
-                                                email: user.users.last.email,
-                                                password:
-                                                    user.users.last.password,
-                                                phone: user.users.last.phone,
-                                                latitude:
-                                                    user.users.last.latitude,
-                                                longitude:
-                                                    user.users.last.longitude,
-                                                imageUrl:
-                                                    user.users.last.imageUrl,
-                                                storeId:
-                                                    user.users.last.storeId,
-                                                reviews:
-                                                    user.users.last.reviews,
-                                                favorites: favorites,
-                                                notifications: user
-                                                    .users.last.notifications,
-                                                created:
-                                                    user.users.last.created,
-                                              ));
-                                            }
-                                          });
-                                        },
-                                        child: product.isFavorite
-                                            ? Icon(
-                                                Icons.favorite_rounded,
-                                                color: product.isFavorite
-                                                    ? Colors.red
-                                                    : Colors.grey,
-                                              )
-                                            : Icon(
-                                                Icons.favorite_border_rounded,
-                                                color: product.isFavorite
-                                                    ? Colors.red
-                                                    : Colors.grey,
-                                              ),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      child: Image.network(
+                                        product.imageUrls[0],
+                                        width: screenSize.width * .83,
+                                        height: screenSize.height / 2.66,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              // product
+                                              //     // .toggleFavorite(product.products[0].id);
+                                              setState(() {
+                                                final favoriteProducts =
+                                                    Provider.of<Favorites>(
+                                                            context,listen: false,)
+                                                        .favorites
+                                                        .expand((fav) => fav
+                                                            .favoriteProducts)
+                                                        .toList();
+                                                final productIndex =
+                                                    favoriteProducts.indexWhere(
+                                                        (prod) =>
+                                                            prod.id ==
+                                                            product.id);
+                                                if (!favoriteProducts
+                                                    .contains(product)) {
+                                                  favoriteProducts.add(product);
+                                                  favorites.add(Favorites(
+                                                    id: const Uuid().v4(),
+                                                    userId: Provider.of<User>(
+                                                            context,
+                                                            listen: false)
+                                                        .users
+                                                        .last
+                                                        .id,
+                                                    favoriteProducts:
+                                                        favoriteProducts,
+                                                  ));
+                                                }else if(favoriteProducts.contains(product)){
+                                                  setState(() {
+                                                    Provider.of<Favorites>(
+                                                      context,listen: false,)
+                                                        .favorites
+                                                        .expand((fav) => fav
+                                                        .favoriteProducts)
+                                                        .toList().removeAt(productIndex);
+                                                    favorites.removeFavorite(productIndex);
+
+                                                  });
+                                                }
+                                              });
+                                            },
+                                            child: favorites.favorites.any(
+                                                    (fav) => fav
+                                                        .favoriteProducts
+                                                        .contains(product))
+                                                ? Icon(
+                                                    Icons.favorite_rounded,
+                                                    color:  favorites.favorites.any(
+                                                            (fav) => fav
+                                                            .favoriteProducts
+                                                            .contains(product))
+                                                        ? Colors.red
+                                                        : Colors.grey,
+                                                  )
+                                                : Icon(
+                                                    Icons
+                                                        .favorite_border_rounded,
+                                                    color:  favorites.favorites.any(
+                                                            (fav) => fav
+                                                            .favoriteProducts
+                                                            .contains(product))
+                                                        ? Colors.red
+                                                        : Colors.grey,
+                                                  ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              .1,
+                                        )
+                                      ],
+                                    ),
+                                    Text(
+                                      product.name,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      getStoreName(product.storeId),
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      '\$${product.price}',
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
                                     SizedBox(
-                                      width: MediaQuery.of(context).size.width *
-                                          .1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              .1,
                                     )
                                   ],
                                 ),
-                                Text(
-                                  product.name,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  getStoreName(product.storeId),
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  '\$${product.price}',
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
-                                SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height * .1,
-                                )
-                              ],
-                            ),
-                          );
-                        });
+                              );
+                            }),
+                      );
               }),
             ),
           ),
