@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/likortartproduct.dart';
+// import '../models/likortartproduct.dart';
 import '../models/likortfavorites.dart';
 import '../models/likortstore.dart';
 import '../models/likortusers.dart';
@@ -38,11 +38,9 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
           notifications: [],
           orders: []), // Handle case where store is not found
     );
+// Return the store name if found, otherwise return an empty string or a default value
+    return store.name ?? ''; // Or a default value like 'Unknown Store'
 
-    // Return the store name if found, otherwise return an empty string or a default value
-    return store != null
-        ? store.name
-        : ''; // Or a default value like 'Unknown Store'
   }
   @override
   Widget build(BuildContext context) {
