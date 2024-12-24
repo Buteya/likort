@@ -47,7 +47,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
-    final product = Provider.of<Product>(context);
+    // final product = Provider.of<Product>(context);
     // Filter items to get only favorites
     // final favoriteItems = product.favoriteProducts
     //     .where((products) => product.favoriteProducts.contains(product.id))
