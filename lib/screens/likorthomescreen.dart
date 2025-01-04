@@ -429,7 +429,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                               return InkWell(
                                 onTap: () {
                                   Navigator.of(context)
-                                      .pushNamed('/likortproductdetail');
+                                      .pushNamed('/likortproductdetail',arguments: index);
                                 },
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,

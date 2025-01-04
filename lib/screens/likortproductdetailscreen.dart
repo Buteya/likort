@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/likortartproduct.dart';
+import '../models/likortstore.dart';
 
 class LikortProductDetailScreen extends StatefulWidget {
   const LikortProductDetailScreen({super.key});
@@ -9,15 +13,40 @@ class LikortProductDetailScreen extends StatefulWidget {
 }
 
 class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
+  String getStoreName(String storeId) {
+    // Find the store with the matching storeId
+    final store = Provider.of<Store>(context, listen: false).stores.firstWhere(
+          (store) => store.id == storeId,
+      orElse: () => Store(
+          userId: '',
+          created: DateTime.now(),
+          imageUrl: [],
+          reviews: [],
+          id: '',
+          name: '',
+          description: '',
+          products: [],
+          notifications: [],
+          orders: []), // Handle case where store is not found
+    );
+
+    // Return the store name if found, otherwise return an empty string or a default value
+    return store != null
+        ? store.name
+        : ''; // Or a default value like 'Unknown Store'
+  }
+
   @override
   Widget build(BuildContext context) {
+    final index = ModalRoute.of(context)!.settings.arguments as int;
+    final products = Provider.of<Product>(context,listen:false).products;
     return Scaffold(
       appBar: AppBar(
         leading: InkWell(
             onTap: () {
               Navigator.of(context).pushReplacementNamed('/likorthomescreen');
             },
-            child: const Icon(Icons.arrow_circle_left_outlined)),
+            child: const Icon(Icons.arrow_back,),),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -30,7 +59,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15.0),
                 child: Image.network(
-                  'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
+                  products[index].imageUrls[0],
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height / 2.4,
                   fit: BoxFit.cover,
@@ -45,6 +74,32 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                 children: [
                   SizedBox(
                     width: MediaQuery.of(context).size.width * .1,
+                  ),
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      shrinkWrap: true,
+                      itemCount: products[index].imageUrls.length,
+                      itemBuilder: (context, imageIndex) {
+                        return Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(15.0),
+                              child: Image.network(
+                                products[index].imageUrls[imageIndex],
+                                width: 90,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * .02,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(15.0),
@@ -121,22 +176,22 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                 )
               ],
             ),
-            const Text('paint brushes'),
-            const Text('Supplies'),
+             Text(products[index].name),
+             Text(products[index].typeOfArt),
             Text(
-              'ann\'s store',
+              getStoreName(products[index].storeId),
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const Center(
+             Center(
               child: SizedBox(
                 width: 200,
                 child: Text(
-                  'The brushes are likely made of natural materials, possibly wood and animal hair.The container might be a repurposed jar or pot, adding to the rustic charm.',
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(fontWeight: FontWeight.w400),
+                  products[index].description,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w400),
                 ),
               ),
             ),
@@ -144,7 +199,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               height: MediaQuery.of(context).size.height * .03,
             ),
             Text(
-              '\$99',
+              '\$${products[index].price}',
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
