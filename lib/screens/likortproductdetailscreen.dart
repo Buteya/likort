@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/likortartproduct.dart';
+import '../models/likortfavorites.dart';
 import '../models/likortstore.dart';
+import '../models/likortusers.dart';
 
 class LikortProductDetailScreen extends StatefulWidget {
   const LikortProductDetailScreen({super.key});
@@ -13,6 +16,8 @@ class LikortProductDetailScreen extends StatefulWidget {
 }
 
 class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
+  int _selectedImageIndex = 0;
+  int _quantity = 1;
   String getStoreName(String storeId) {
     // Find the store with the matching storeId
     final store = Provider.of<Store>(context, listen: false).stores.firstWhere(
@@ -40,6 +45,12 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   Widget build(BuildContext context) {
     final index = ModalRoute.of(context)!.settings.arguments as int;
     final products = Provider.of<Product>(context,listen:false).products;
+    final favorites = Provider.of<Favorites>(
+      context,
+      listen: false,
+    );
+
+
     return Scaffold(
       appBar: AppBar(
         leading: InkWell(
@@ -59,7 +70,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15.0),
                 child: Image.network(
-                  products[index].imageUrls[0],
+                  products[index].imageUrls[_selectedImageIndex],
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height / 2.4,
                   fit: BoxFit.cover,
@@ -76,90 +87,37 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                     width: MediaQuery.of(context).size.width * .1,
                   ),
                   SizedBox(
-                    height: 200,
+                    height: 100,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       shrinkWrap: true,
                       itemCount: products[index].imageUrls.length,
                       itemBuilder: (context, imageIndex) {
-                        return Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(15.0),
-                              child: Image.network(
-                                products[index].imageUrls[imageIndex],
-                                width: 90,
-                                height: 70,
-                                fit: BoxFit.cover,
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              _selectedImageIndex = imageIndex; // Update _selectedImageIndex
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15.0),
+                                child: Image.network(
+                                  products[index].imageUrls[imageIndex],
+                                  width: MediaQuery.of(context).size.width * .2,
+                                  height:  MediaQuery.of(context).size.height * .15,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * .02,
-                            ),
-                          ],
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * .02,
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.network(
-                      'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                      width: 90,
-                      height: 70,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * .02,
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.network(
-                      'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                      width: 90,
-                      height: 70,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * .02,
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.network(
-                      'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                      width: 90,
-                      height: 70,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * .02,
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.network(
-                      'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                      width: 90,
-                      height: 70,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * .02,
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.network(
-                      'https://cdn.pixabay.com/photo/2016/09/20/18/49/brushes-1683134_1280.jpg',
-                      width: 90,
-                      height: 70,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * .02,
                   ),
                 ],
               ),
@@ -170,7 +128,75 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Icon(Icons.favorite_rounded),
+                InkWell(
+                  onTap: () {
+                    // product
+                    //     // .toggleFavorite(product.products[0].id);
+                    setState(() {
+                      final favoriteProducts =
+                      Provider.of<Favorites>(
+                        context,listen: false,)
+                          .favorites
+                          .expand((fav) => fav
+                          .favoriteProducts)
+                          .toList();
+                      final productIndex =
+                      favoriteProducts.indexWhere(
+                              (prod) =>
+                          prod.id ==
+                              products[index].id);
+                      if (!favoriteProducts
+                          .contains(products[index])) {
+                        favoriteProducts.add(products[index]);
+                        favorites.add(Favorites(
+                          id: const Uuid().v4(),
+                          userId: Provider.of<User>(
+                              context,
+                              listen: false)
+                              .users
+                              .last
+                              .id,
+                          favoriteProducts:
+                          favoriteProducts,
+                        ));
+                      }else if(favoriteProducts.contains(products[index])){
+                        setState(() {
+                          Provider.of<Favorites>(
+                            context,listen: false,)
+                              .favorites
+                              .expand((fav) => fav
+                              .favoriteProducts)
+                              .toList().removeAt(productIndex);
+                          favorites.removeFavorite(productIndex);
+
+                        });
+                      }
+                    });
+                  },
+                  child: favorites.favorites.any(
+                          (fav) => fav
+                          .favoriteProducts
+                          .contains(products[index]))
+                      ? Icon(
+                    Icons.favorite_rounded,
+                    color:  favorites.favorites.any(
+                            (fav) => fav
+                            .favoriteProducts
+                            .contains(products[index]))
+                        ? Colors.red
+                        : Colors.grey,
+                  )
+                      : Icon(
+                    Icons
+                        .favorite_border_rounded,
+                    color:  favorites.favorites.any(
+                            (fav) => fav
+                            .favoriteProducts
+                            .contains(products[index]))
+                        ? Colors.red
+                        : Colors.grey,
+                  ),
+                ),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * .1,
                 )
@@ -220,14 +246,26 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0), // Adjust padding
                     ),
-                    child: const Row(
+                    child:  Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.remove),
-                        SizedBox(width: 8.0), // Add spacing
-                        Text('1'),
-                        SizedBox(width: 8.0), // Add spacing
-                        Icon(Icons.add),
+                        InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_quantity > 1) {
+                                  _quantity--;
+                                }});
+                            },child: const Icon(Icons.remove,),),
+                        const SizedBox(width: 8.0), // Add spacing
+                        Text(_quantity.toString()),
+                        const SizedBox(width: 8.0), // Add spacing
+                        InkWell(
+                            onTap: () {
+                              setState(() {
+                                  _quantity++;
+                                });
+                            },
+                            child: const Icon(Icons.add,),),
                       ],
                     ),
                   ),
@@ -250,7 +288,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               ),
             ),
             SizedBox(
-              height: MediaQuery.of(context).size.height * .02,
+              height: MediaQuery.of(context).size.height * .04,
             )
           ],
         ),
