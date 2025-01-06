@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/likortartproduct.dart';
+import '../models/likortcartitem.dart';
 import '../models/likortfavorites.dart';
 import '../models/likortstore.dart';
 import '../models/likortusers.dart';
@@ -275,13 +276,29 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0), // Adjust padding
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.shopping_cart_rounded),
-                        SizedBox(width: 8.0), // Add spacing
-                        Text('Add to Cart'), // Capitalize text
-                      ],
+                    child: InkWell(
+                      onTap: (){
+                        var cartItems = Provider.of<CartItem>(context,listen:false);
+                        var id = const Uuid().v4();
+                        if(_quantity >= 1){
+                          cartItems.add(CartItem(id: id,userId: Provider.of<User>(context,listen:false).users.last.id, product: products[index],quantity: _quantity,),);
+                        }
+                       for(var item in cartItems.cartItems){
+                         print(item.id);
+                         print(item.userId);
+                         print(item.product.id);
+                         print(item.quantity);
+                       }
+                       Navigator.of(context).pushReplacementNamed('/likortcart');
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.shopping_cart_rounded),
+                          SizedBox(width: 8.0), // Add spacing
+                          Text('Add to Cart'), // Capitalize text
+                        ],
+                      ),
                     ),
                   ),
                 ],

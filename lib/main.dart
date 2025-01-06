@@ -96,6 +96,7 @@ void main() async {
           ChangeNotifierProvider(
             create: (context) => CartItem(
               id: '',
+              userId: '',
               product: Product(
                 id: '',
                 name: '',

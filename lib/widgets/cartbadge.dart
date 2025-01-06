@@ -13,7 +13,7 @@ class _CartBadgeState extends State<CartBadge> {
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartItem>(context);
-    final cartItemCount = cartProvider.items.length;
+    final cartItemCount = cartProvider.cartItems.length;
     return Stack(
       alignment: Alignment.center,
       children: [
