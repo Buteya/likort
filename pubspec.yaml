@@ -53,6 +53,7 @@ dependencies:
   flutter_rating_bar: ^4.0.1
   image_cropper: ^8.0.2
   syncfusion_flutter_charts: ^28.1.35
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

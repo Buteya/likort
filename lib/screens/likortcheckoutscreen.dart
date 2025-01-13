@@ -1,6 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+import '../models/likortcartitem.dart';
+import '../models/likortusers.dart';
 
 class LikortCheckoutScreen extends StatefulWidget {
   const LikortCheckoutScreen({super.key});
@@ -18,6 +26,15 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
   String? _currentAddress;
   String? _selectedPaymentMethod;
   String _selectedOption = 'Delivery';
+  bool _isDateSelected = true;
+  bool _isCurrentAddress = true;
+  bool _isDeliveryInstruction = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentAddress();
+  }
 
   Future<void> _selectDateTime(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -43,11 +60,6 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _getCurrentAddress();
-  }
   Future<void> _getCurrentAddress() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -98,14 +110,15 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue[100] : Colors.white,
-          borderRadius: BorderRadius.circular(8),boxShadow: [
-          if (isSelected)
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-        ],
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.3),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -119,27 +132,132 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
     );
   }
 
+  Future<void> fetchAccessToken(BuildContext context) async {
+    final String consumerKey = 'L5dKdxWq9SemWTAkaiXm1V06GlOSnpbQytwiqjsrMO5gxT8q'; // Replace with your consumer key
+    final String consumerSecret = 'PvoM5NeFGbQTrQvTevun19AVAC3LGFxCD05m1jhnMWBVkFBeTWpB5pr9A2NCHPdn'; // Replace with your consumer secret
+
+    final String auth = 'Basic ' + base64Encode(utf8.encode('$consumerKey:$consumerSecret'));
+
+    final headers = {
+      'Authorization': auth,
+    };
+
+    final url = Uri.parse('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
+
+    try {
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final accessToken = responseBody['access_token'];
+
+        // Store the access token in a suitable place, for example in a state variable
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Access Token: $accessToken')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch data. Status code: ${response.statusCode}')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    }
+  }
+
+  Future<void> initiateMpesaPayment(String number,String totalAmount) async {
+    const consumerKey = 'L5dKdxWq9SemWTAkaiXm1V06GlOSnpbQytwiqjsrMO5gxT8q';
+    const consumerSecret = 'PvoM5NeFGbQTrQvTevun19AVAC3LGFxCD05m1jhnMWBVkFBeTWpB5pr9A2NCHPdn';
+
+    final basicAuth = 'Basic ${base64Encode(utf8.encode('$consumerKey:$consumerSecret'))}';
+
+    final headers = {
+      'Authorization': basicAuth,
+    };
+
+    final http.Response response = await http.get(
+      Uri.parse(
+          'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'), // Replace with actual Visa API endpoint
+      headers: headers,
+    );
+
+    print(response.body);
+    final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+
+    // print(response.body);
+    // final Map<String, dynamic> responseData = jsonDecode(response.body);
+    print(responseData['access_token']);
+    final http.Response payresponse = await http.post(
+        Uri.parse(
+            'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'), // Replace with actual Visa API endpoint
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${responseData['access_token']}"
+        },
+        body: jsonEncode({
+          "BusinessShortCode": "174379",
+          "Password":
+          "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMTYwMjE2MTY1NjI3",
+          "Timestamp": "20160216165627",
+          "TransactionType": "CustomerPayBillOnline",
+          "Amount": totalAmount,
+          "PartyA": "254${number.substring(1)}",
+          "PartyB": "174379",
+          "PhoneNumber": "254${number.substring(1)}",
+          "CallBackURL": "https://mydomain.com/pat",
+          "AccountReference": "Test",
+          "TransactionDesc": "Test"
+        }));
+    print(payresponse.body);
+  }
+
+  void _makePayment() async{
+    var cartitems = Provider.of<CartItem>(context,listen:false);
+    var user = Provider.of<User>(context,listen:false);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var userId = prefs.getString('id');
+    var currentUser = user.users.firstWhere((item)=>item.id == userId);
+    print(_selectedPaymentMethod);
+    if(cartitems.cartItems.firstWhere((item)=>item.userId == currentUser.id ) != null){
+      if (_currentAddress == null &&
+          (_selectedDate == null && _selectedTime == null) &&
+          _deliveryInstructionsController.text.isEmpty) {
+        setState(() {
+          _isDateSelected = false;
+          _isCurrentAddress = false;
+          _isDeliveryInstruction = false;
+        });
+      } else {
+        if(_selectedPaymentMethod == 'Mpesa'){
+            initiateMpesaPayment(currentUser.phone, cartitems.allCartItemsPrice().toString());
+        }else if(_selectedPaymentMethod == 'cash'){
+
+        }
+        Navigator.of(context).pushReplacementNamed('/likortpaymentsuccess');
+      }
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        title: const Text('checkout'),
         leading: InkWell(
           onTap: () {
             Navigator.of(context).pushReplacementNamed('/likortcart');
           },
-          child: const Icon(Icons.arrow_circle_left_outlined),
+          child: const Icon(Icons.arrow_back),
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const Center(
-              child: Text('checkout'),
-            ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * .01,
-            ),
             Padding(
               padding: const EdgeInsets.only(left: 16.0, right: 16.0),
               child: AspectRatio(
@@ -163,7 +281,8 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                 ButtonSegment<String>(
                   value: 'Delivery',
                   label: Text('Delivery'),
-                  icon: Icon(Icons.delivery_dining),),
+                  icon: Icon(Icons.delivery_dining),
+                ),
                 ButtonSegment<String>(
                   value: 'Pickup',
                   label: Text('Pickup'),
@@ -201,7 +320,11 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 16.0,right: 16.0,top: 12.0,),
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                top: 12.0,
+              ),
               child: InputDecorator(
                 decoration: const InputDecoration(
                   labelText: 'Current Address',
@@ -215,8 +338,18 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                 ),
               ),
             ),
+            _isCurrentAddress == false
+                ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                      'please pick delivery address',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                )
+                : const SizedBox(),
             Padding(
-              padding: const EdgeInsets.only(left: 16.0,right: 16.0,top: 12.0),
+              padding:
+                  const EdgeInsets.only(left: 16.0, right: 16.0, top: 12.0),
               child: InputDecorator(
                 decoration: const InputDecoration(
                   labelText: 'Delivery Date & Time',
@@ -233,11 +366,22 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                 ),
               ),
             ),
+            _isDateSelected == false
+                ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                      'please pick delivery date and time',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                )
+                : const SizedBox(),
             Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 12.0),
+              padding:
+                  const EdgeInsets.only(left: 16.0, right: 16.0, top: 12.0),
               child: InputDecorator(
                 decoration: const InputDecoration(
-                  labelText: 'Delivery instructions',suffixIcon: Icon(Icons.create_rounded),
+                  labelText: 'Delivery instructions',
+                  suffixIcon: Icon(Icons.create_rounded),
                 ),
                 child: InkWell(
                   onTap: () async {
@@ -245,12 +389,15 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Delivery Instructions'),
-                        content: const TextField(
+                        content: TextField(
+                          controller: _deliveryInstructionsController,
                           maxLines: null, // Allow multiple lines
-                          decoration: InputDecoration(
-                            hintText: 'Enter delivery instructions (e.g., Leave at the door)',
+                          decoration: const InputDecoration(
+                            hintText:
+                                'Enter delivery instructions (e.g., Leave at the door)',
                           ),
-                          autofocus: true, // Focus on the TextField when the dialog opens
+                          autofocus:
+                              true, // Focus on the TextField when the dialog opens
                         ),
                         actions: [
                           TextButton(
@@ -258,7 +405,8 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                             child: const Text('Cancel'),
                           ),
                           TextButton(
-                            onPressed: () => Navigator.pop(context, _deliveryInstructionsController.text),
+                            onPressed: () => Navigator.pop(
+                                context, _deliveryInstructionsController.text),
                             child: const Text('Save'),
                           ),
                         ],
@@ -274,36 +422,82 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                   child: Text(
                     _deliveryInstructions ?? 'Add delivery instructions',
                     style: TextStyle(
-                      color: _deliveryInstructions == null ? Colors.grey : Colors.black,
+                      color: _deliveryInstructions == null
+                          ? Colors.grey
+                          :Theme.of(context).brightness == Brightness.light? Colors.black:Colors.white,
                     ),
                   ),
                 ),
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height*.01),
-            const Center(child: Text('order summary'),),
-            ListTile(
-              title: const Text('item.name'),
-              trailing: Text('\$${100.toStringAsFixed(2)}'),
+            _isDeliveryInstruction == false
+                ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                      'please include delivery instructions',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                )
+                : const SizedBox(),
+            SizedBox(height: MediaQuery.of(context).size.height * .01),
+            const Center(
+              child: Text('order summary'),
             ),
+            ListView.builder(
+                shrinkWrap: true, // Add this line
+                physics: const NeverScrollableScrollPhysics(), // Add this line
+                itemCount: Provider.of<CartItem>(context, listen: false)
+                    .cartItems
+                    .length,
+                itemBuilder: (context, index) {
+                  var cartitems = Provider.of<CartItem>(context).cartItems;
+                  return ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: Image.network(
+                        cartitems[index].product.imageUrls[0],
+                        width: MediaQuery.of(context).size.width * 0.1,
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    title: Text(cartitems[index].product.name),
+                    trailing: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('${cartitems[index].quantity}x'),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.1,
+                        ),
+                        Text(
+                            '\$${cartitems[index].product.price.toStringAsFixed(2)}'),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.15,
+                        ),
+                        Text(
+                            '\$${cartitems[index].getTotalPrice().toStringAsFixed(2)}'),
+                      ],
+                    ),
+                  );
+                }),
             const SizedBox(height: 16),
-          
-
-
-
             const Text(
               'Payment Method',
-              style: TextStyle(fontSize:16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.only(left: 16.0,right: 16.0,),
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+              ),
               child: Card(
                 child: ExpansionTile(
                   title: Text(_selectedPaymentMethod != null
                       ? (_selectedPaymentMethod == 'cash'
-                      ? 'Cash on Delivery'
-                      : 'Card Payment')
+                          ? 'Cash on Delivery'
+                          : 'Mpesa')
                       : 'Select Payment Method'),
                   children: [
                     ListTile(
@@ -313,17 +507,17 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
                         setState(() {
                           _selectedPaymentMethod = 'cash';
                         });
-                        Navigator.pop(context); // Close the ExpansionTile
+                        // Navigator.pop(context); // Close the ExpansionTile
                       },
                     ),
                     ListTile(
                       leading: const Icon(Icons.credit_card),
-                      title: const Text('Card Payment'),
+                      title: const Text('Mpesa'),
                       onTap: () {
                         setState(() {
-                          _selectedPaymentMethod = 'card';
+                          _selectedPaymentMethod = 'Mpesa';
                         });
-                        Navigator.pop(context); // Close the ExpansionTile
+                        // Navigator.pop(context); // Close the ExpansionTile
                       },
                     ),
                   ],
@@ -333,13 +527,15 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               // onPressed: _selectedPaymentMethod != null?
-                   onPressed: () {
+              onPressed: () {
                 // Start payment process
                 // ...
-                   Navigator.of(context).pushReplacementNamed('/likortpaymentsuccess');
+                _makePayment();
+                // fetchAccessToken(context);
+
                 //      Navigator.of(context).pushReplacementNamed('/likortpaymentfailure');
               },
-                  // : null, // Disable button if payment method is not selected
+              // : null, // Disable button if payment method is not selected
               child: const Text('Proceed to Payment'),
             ),
             const SizedBox(height: 24),
@@ -349,4 +545,3 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
     );
   }
 }
-
