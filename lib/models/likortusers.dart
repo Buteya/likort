@@ -24,7 +24,7 @@ class User extends ChangeNotifier {
   final DateTime created;
   bool isOnline;
 
-  final List<User> _users = [];
+  late List<User> _users = [];
 
   UnmodifiableListView<User> get users => UnmodifiableListView(_users);
 
@@ -89,25 +89,42 @@ class User extends ChangeNotifier {
     };
   }
 
-  void add(User user) {
-    _users.add(user);
-    // This call tells the widgets that are listening to this model to rebuild.
-    notifyListeners();
+  void add(User? user) {
+    // Add a new user to the list
+    if (user != null) {
+      _users = [..._users, user];
+      // This call tells the widgets that are listening to this model to rebuild.
+      notifyListeners();
+    } else {
+      print('Cannot add a null user.');
+    }
   }
 
   void removeUser(int index) {
-    _users.removeAt(index);
-    notifyListeners();
+    if (index >= 0 && index < _users.length) {
+      _users.removeAt(index);
+      notifyListeners();
+    } else {
+      print('Invalid index: $index');
+    }
   }
 
   void updateUser(User updatedUser) {
-    _users[_users.length - 1] = updatedUser;
-    notifyListeners();
+    final index = _users.indexWhere((user) => user.id == updatedUser.id);
+    if (index != -1) {
+      _users[index] = updatedUser;
+      notifyListeners();
+    } else {
+      print('User with ID ${updatedUser.id} not found.');
+    }
   }
-
   void updateSingleUser(User updatedUser, int index) {
-    _users[index] = updatedUser;
-    notifyListeners();
+    if (index >= 0 && index < _users.length) {
+      _users[index] = updatedUser;
+      notifyListeners();
+    } else {
+      print('Invalid index: $index');
+    }
   }
 
   void removeAll() {

@@ -114,7 +114,7 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: Colors.blue.withOpacity(0.3),
+                color: Colors.blue.withValues(alpha: 0.3),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -133,10 +133,10 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
   }
 
   Future<void> fetchAccessToken(BuildContext context) async {
-    final String consumerKey = 'L5dKdxWq9SemWTAkaiXm1V06GlOSnpbQytwiqjsrMO5gxT8q'; // Replace with your consumer key
-    final String consumerSecret = 'PvoM5NeFGbQTrQvTevun19AVAC3LGFxCD05m1jhnMWBVkFBeTWpB5pr9A2NCHPdn'; // Replace with your consumer secret
+    const String consumerKey = 'L5dKdxWq9SemWTAkaiXm1V06GlOSnpbQytwiqjsrMO5gxT8q'; // Replace with your consumer key
+    const String consumerSecret = 'PvoM5NeFGbQTrQvTevun19AVAC3LGFxCD05m1jhnMWBVkFBeTWpB5pr9A2NCHPdn'; // Replace with your consumer secret
 
-    final String auth = 'Basic ' + base64Encode(utf8.encode('$consumerKey:$consumerSecret'));
+    final String auth = 'Basic ${base64Encode(utf8.encode('$consumerKey:$consumerSecret'))}';
 
     final headers = {
       'Authorization': auth,
@@ -221,25 +221,23 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
     var userId = prefs.getString('id');
     var currentUser = user.users.firstWhere((item)=>item.id == userId);
     print(_selectedPaymentMethod);
-    if(cartitems.cartItems.firstWhere((item)=>item.userId == currentUser.id ) != null){
-      if (_currentAddress == null &&
-          (_selectedDate == null && _selectedTime == null) &&
-          _deliveryInstructionsController.text.isEmpty) {
-        setState(() {
-          _isDateSelected = false;
-          _isCurrentAddress = false;
-          _isDeliveryInstruction = false;
-        });
-      } else {
-        if(_selectedPaymentMethod == 'Mpesa'){
-            initiateMpesaPayment(currentUser.phone, cartitems.allCartItemsPrice().toString());
-        }else if(_selectedPaymentMethod == 'cash'){
-
-        }
-        Navigator.of(context).pushReplacementNamed('/likortpaymentsuccess');
+    if (_currentAddress == null &&
+        (_selectedDate == null && _selectedTime == null) &&
+        _deliveryInstructionsController.text.isEmpty) {
+      setState(() {
+        _isDateSelected = false;
+        _isCurrentAddress = false;
+        _isDeliveryInstruction = false;
+      });
+    } else {
+      if(_selectedPaymentMethod == 'Mpesa'){
+          initiateMpesaPayment(currentUser.phone, cartitems.allCartItemsPrice().toString());
+      }else if(_selectedPaymentMethod == 'cash'){
+        Navigator.of(context).pushReplacementNamed('/likorttrackorder');
       }
+      Navigator.of(context).pushReplacementNamed('/likortpaymentsuccess');
     }
-
+  
   }
 
   @override
