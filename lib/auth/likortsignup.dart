@@ -157,18 +157,24 @@ class _LikortSignupState extends State<LikortSignup> {
               created: DateTime.now(),
             ));
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('$e'),
-              ),
-            );
+            if(context.mounted){
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$e'),
+                ),
+              );
+            }
+
             print('Error: $e');
           }
           setState(() {
             _selected = true;
           });
           //once added navigating user to login
-          Navigator.of(context).pushNamed('/likortlogin');
+          if(context.mounted){
+            Navigator.of(context).pushNamed('/likortlogin');
+          }
+
         } else {
           setState(() {
             _selected = false;
@@ -434,7 +440,7 @@ class _LikortSignupState extends State<LikortSignup> {
                               child: SizedBox(
                                 height: _selectedMarker == null
                                     ? 0
-                                    : MediaQuery.of(context).size.height * .59,
+                                    : _showHint?MediaQuery.of(context).size.height * .61:MediaQuery.of(context).size.height * .44,
                                 child: _currentPosition != null
                                     ? Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -505,8 +511,11 @@ class _LikortSignupState extends State<LikortSignup> {
                                                 ),
                                               ),
                                             ),
-                                          const SizedBox(
-                                            height: 20,
+                                           SizedBox(
+                                            height: MediaQuery.of(context)
+                                                .size
+                                                .height *
+                                                0.01,
                                           ),
                                           SizedBox(
                                             height: MediaQuery.of(context)
@@ -546,9 +555,7 @@ class _LikortSignupState extends State<LikortSignup> {
                                       ),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: ElevatedButton(
+                          ElevatedButton(
                                 onPressed: _selectedMarker != null
                                     ? () {
                                         setState(() {
@@ -577,7 +584,7 @@ class _LikortSignupState extends State<LikortSignup> {
                                   ],
                                 ),
                               ),
-                            ),
+
                             _selected == false
                                 ? Text(
                                     'Delivery location not selected',

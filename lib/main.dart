@@ -210,10 +210,9 @@ class _MyAppState extends State<MyApp> {
           _saveThemeMode('system');
           break;
         case ThemeMode.system:
-        // default:
-        //   _themeMode = ThemeMode.light;
-        //   _saveThemeMode('light');
-        //   break;
+        _themeMode = ThemeMode.light;
+          _saveThemeMode('light');
+          break;
       }
     });
   }
