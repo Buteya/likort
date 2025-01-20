@@ -24,7 +24,7 @@ class _LikortLoginState extends State<LikortLogin> {
     String? encodedPassword;
     String? prefEmail;
     String? decodedPassword;
-
+    var currentUser = users.users.firstWhere((user)=>user.id == prefs.getString('id'));
     try {
       prefEmail = prefs.getString('email');
       encodedPassword = prefs.getString('password');
@@ -45,21 +45,21 @@ class _LikortLoginState extends State<LikortLogin> {
           decodedPassword == password) {
         users.updateUser(
           User(
-            id: users.users.last.id,
-            firstname: users.users.last.firstname,
-            lastname: users.users.last.lastname,
+            id: currentUser.id,
+            firstname: currentUser.firstname,
+            lastname: currentUser.lastname,
             email: email,
             password: password,
-            phone: users.users.last.phone,
-            latitude: users.users.last.latitude,
-            longitude: users.users.last.longitude,
-            imageUrl: users.users.last.imageUrl,
-            storeId: users.users.last.storeId,
-            reviews: users.users.last.reviews,
-            favorites: users.users.last.favorites,
-            notifications: users.users.last.notifications,
-            created: users.users.last.created,
-            isOnline: users.users.last.isOnline = true,
+            phone: currentUser.phone,
+            latitude: currentUser.latitude,
+            longitude: currentUser.longitude,
+            imageUrl: currentUser.imageUrl,
+            storeId: currentUser.storeId,
+            reviews: currentUser.reviews,
+            favorites: currentUser.favorites,
+            notifications: currentUser.notifications,
+            created: currentUser.created,
+            isOnline: currentUser.isOnline = true,
           ),
         );
         Navigator.pushNamed(context, '/likorthomescreen');

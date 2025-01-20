@@ -440,7 +440,7 @@ class _LikortSignupState extends State<LikortSignup> {
                               child: SizedBox(
                                 height: _selectedMarker == null
                                     ? 0
-                                    : _showHint?MediaQuery.of(context).size.height * .61:MediaQuery.of(context).size.height * .44,
+                                    : _showHint?MediaQuery.sizeOf(context).height * .61:MediaQuery.sizeOf(context).height * .44,
                                 child: _currentPosition != null
                                     ? Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -457,9 +457,8 @@ class _LikortSignupState extends State<LikortSignup> {
                                                 child: Text(
                                                   'The marker on the map show\'s the current location.',
                                                   style: TextStyle(
-                                                    color: MediaQuery.of(
-                                                                    context)
-                                                                .platformBrightness ==
+                                                    color: MediaQuery
+                                                                .platformBrightnessOf(context) ==
                                                             Brightness.dark
                                                         ? Colors.white60
                                                         : Colors.black,
@@ -479,9 +478,8 @@ class _LikortSignupState extends State<LikortSignup> {
                                                 child: Text(
                                                   'If the current location is your delivery location.',
                                                   style: TextStyle(
-                                                    color: MediaQuery.of(
-                                                                    context)
-                                                                .platformBrightness ==
+                                                    color: MediaQuery
+                                                                .platformBrightnessOf(context) ==
                                                             Brightness.dark
                                                         ? Colors.white60
                                                         : Colors.black,
@@ -501,9 +499,8 @@ class _LikortSignupState extends State<LikortSignup> {
                                                 child: Text(
                                                   'Press the button below to set it as your delivery location.',
                                                   style: TextStyle(
-                                                    color: MediaQuery.of(
-                                                                    context)
-                                                                .platformBrightness ==
+                                                    color: MediaQuery
+                                                                .platformBrightnessOf(context) ==
                                                             Brightness.dark
                                                         ? Colors.white60
                                                         : Colors.black,
@@ -512,14 +509,14 @@ class _LikortSignupState extends State<LikortSignup> {
                                               ),
                                             ),
                                            SizedBox(
-                                            height: MediaQuery.of(context)
-                                                .size
+                                            height: MediaQuery
+                                                .sizeOf(context)
                                                 .height *
                                                 0.01,
                                           ),
                                           SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
+                                            height: MediaQuery
+                                                    .sizeOf(context)
                                                     .height *
                                                 0.4,
                                             child: GoogleMap(
