@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCjr2cPgjv2U0jcZ0Jf-3T8bJckOqDx0-E',
-    appId: '1:481238350742:android:7ba4090622d2f2e7453bb7',
+    appId: '1:481238350742:android:ff234917abc9c892453bb7',
     messagingSenderId: '481238350742',
     projectId: 'likort-creatives-app',
     storageBucket: 'likort-creatives-app.firebasestorage.app',
@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'likort-creatives-app.firebaseapp.com',
     storageBucket: 'likort-creatives-app.firebasestorage.app',
   );
+
 }

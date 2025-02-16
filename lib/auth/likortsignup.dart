@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,8 +9,10 @@ import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../models/likortusers.dart';
+import '../models/likortusers.dart' as userLikort;
 
 class LikortSignup extends StatefulWidget {
   const LikortSignup({super.key});
@@ -20,6 +23,7 @@ class LikortSignup extends StatefulWidget {
 
 class _LikortSignupState extends State<LikortSignup> {
   //signup variables
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
   Position? _currentPosition;
   GoogleMapController? _mapController;
@@ -87,6 +91,89 @@ class _LikortSignupState extends State<LikortSignup> {
     );
   }
 
+
+  Future<UserCredential?> signUpWithEmailAndPassword(
+      String email, String password) async {
+    try {
+      // 1. Create the user with email and password
+      UserCredential userCredential =
+      await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // 2. Check if the user is created
+      if (userCredential.user == null) {
+        if (kDebugMode) {
+          print('User creation failed.');
+        }
+        return null;
+      }
+
+      // 3. Get the user ID
+      String userId = userCredential.user!.uid;
+      print(userId);
+      // 4. Create the user data map
+      Map<String, dynamic> userData = {
+        'id': userId,
+        'firstname': _firstnameController.text,
+        'lastname': _lastnameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'phone': _phoneNumber.phoneNumber.toString(), // Use .text instead of .phoneNumber.toString()
+        'latitude': _selectedMarker!.position.latitude, // Handle null case
+        'longitude': _selectedMarker!.position.longitude, // Handle null case
+        'imageUrl': '',
+        'storeId': '',
+        'reviews': [],
+        'favorites': [],
+        'notifications': [],
+        'created': FieldValue.serverTimestamp(), // Use server timestamp
+      };
+
+     for(final user in userData.values){
+       print(user);
+     }
+      // 5. Save the user data to Firestore
+      CollectionReference usersCollection =
+      FirebaseFirestore.instance.collection('users');
+      await usersCollection.doc(userId).set(userData).then((_) {
+        if (kDebugMode) {
+          print('User data saved successfully!');
+          _clearForm();
+        }
+      }).catchError((error) {
+        if (kDebugMode) {
+          print('Error saving user data: $error');
+        }
+        throw Exception('Failed to save user data: $error');
+      });
+
+      // 6. Return the user credential
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        if (kDebugMode) {
+          print('The password provided is too weak.');
+        }
+      } else if (e.code == 'email-already-in-use') {
+        if (kDebugMode) {
+          print('The account already exists for that email.');
+        }
+      } else {
+        if (kDebugMode) {
+          print('FirebaseAuthException: $e');
+        }
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Unexpected Error: $e');
+      }
+      return null;
+    }
+  }
+
   //function to submit signup form
   Future<void> _submitForm() async {
     //setting is loading is true while the function completes
@@ -95,8 +182,8 @@ class _LikortSignupState extends State<LikortSignup> {
     });
 
     //function submit variables
-    User? users;
-    users = Provider.of<User>(context, listen: false);
+    userLikort.User? users;
+    users = Provider.of<userLikort.User>(context, listen: false);
     final encodedPassword =
         base64.encode(utf8.encode(_passwordController.text));
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -140,7 +227,7 @@ class _LikortSignupState extends State<LikortSignup> {
               users.users.last.password != _passwordController.text)) {
         if (_selectedMarker != null) {
           try {
-            users.add(User(
+            users.add(userLikort.User(
               id: id,
               firstname: _firstnameController.text,
               lastname: _lastnameController.text,
@@ -157,7 +244,7 @@ class _LikortSignupState extends State<LikortSignup> {
               created: DateTime.now(),
             ));
           } catch (e) {
-            if(context.mounted){
+            if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('$e'),
@@ -171,10 +258,9 @@ class _LikortSignupState extends State<LikortSignup> {
             _selected = true;
           });
           //once added navigating user to login
-          if(context.mounted){
+          if (context.mounted) {
             Navigator.of(context).pushNamed('/likortlogin');
           }
-
         } else {
           setState(() {
             _selected = false;
@@ -183,7 +269,7 @@ class _LikortSignupState extends State<LikortSignup> {
       } else if (users.users.isEmpty) {
         if (_selectedMarker != null) {
           try {
-            users.add(User(
+            users.add(userLikort.User(
               id: id,
               firstname: _firstnameController.text,
               lastname: _lastnameController.text,
@@ -256,7 +342,7 @@ class _LikortSignupState extends State<LikortSignup> {
       }
 
       //clearing the submit form
-      _clearForm();
+      // _clearForm();
       setState(() {
         _isLoading = false;
       });
@@ -440,7 +526,11 @@ class _LikortSignupState extends State<LikortSignup> {
                               child: SizedBox(
                                 height: _selectedMarker == null
                                     ? 0
-                                    : _showHint?MediaQuery.sizeOf(context).height * .61:MediaQuery.sizeOf(context).height * .44,
+                                    : _showHint
+                                        ? MediaQuery.sizeOf(context).height *
+                                            .61
+                                        : MediaQuery.sizeOf(context).height *
+                                            .44,
                                 child: _currentPosition != null
                                     ? Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -458,7 +548,8 @@ class _LikortSignupState extends State<LikortSignup> {
                                                   'The marker on the map show\'s the current location.',
                                                   style: TextStyle(
                                                     color: MediaQuery
-                                                                .platformBrightnessOf(context) ==
+                                                                .platformBrightnessOf(
+                                                                    context) ==
                                                             Brightness.dark
                                                         ? Colors.white60
                                                         : Colors.black,
@@ -479,7 +570,8 @@ class _LikortSignupState extends State<LikortSignup> {
                                                   'If the current location is your delivery location.',
                                                   style: TextStyle(
                                                     color: MediaQuery
-                                                                .platformBrightnessOf(context) ==
+                                                                .platformBrightnessOf(
+                                                                    context) ==
                                                             Brightness.dark
                                                         ? Colors.white60
                                                         : Colors.black,
@@ -500,7 +592,8 @@ class _LikortSignupState extends State<LikortSignup> {
                                                   'Press the button below to set it as your delivery location.',
                                                   style: TextStyle(
                                                     color: MediaQuery
-                                                                .platformBrightnessOf(context) ==
+                                                                .platformBrightnessOf(
+                                                                    context) ==
                                                             Brightness.dark
                                                         ? Colors.white60
                                                         : Colors.black,
@@ -508,15 +601,13 @@ class _LikortSignupState extends State<LikortSignup> {
                                                 ),
                                               ),
                                             ),
-                                           SizedBox(
-                                            height: MediaQuery
-                                                .sizeOf(context)
-                                                .height *
+                                          SizedBox(
+                                            height: MediaQuery.sizeOf(context)
+                                                    .height *
                                                 0.01,
                                           ),
                                           SizedBox(
-                                            height: MediaQuery
-                                                    .sizeOf(context)
+                                            height: MediaQuery.sizeOf(context)
                                                     .height *
                                                 0.4,
                                             child: GoogleMap(
@@ -552,35 +643,35 @@ class _LikortSignupState extends State<LikortSignup> {
                                       ),
                               ),
                             ),
-                          ElevatedButton(
-                                onPressed: _selectedMarker != null
-                                    ? () {
-                                        setState(() {
-                                          _selected = true;
-                                        });
-                                        // Send selected location for delivery
-                                        print(
-                                            'Selected location: ${_selectedMarker!.position}');
-                                        final scaffoldMessenger =
-                                            ScaffoldMessenger.of(context);
-                                        // Show the first SnackBar
-                                        scaffoldMessenger.showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'delivery location has been set!!!'),
-                                            duration: Duration(seconds: 2),
-                                          ),
-                                        );
-                                      }
-                                    : null,
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text('Set Delivery Location'),
-                                    Icon(Icons.check),
-                                  ],
-                                ),
+                            ElevatedButton(
+                              onPressed: _selectedMarker != null
+                                  ? () {
+                                      setState(() {
+                                        _selected = true;
+                                      });
+                                      // Send selected location for delivery
+                                      print(
+                                          'Selected location: ${_selectedMarker!.position}');
+                                      final scaffoldMessenger =
+                                          ScaffoldMessenger.of(context);
+                                      // Show the first SnackBar
+                                      scaffoldMessenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'delivery location has been set!!!'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
+                                  : null,
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('Set Delivery Location'),
+                                  Icon(Icons.check),
+                                ],
                               ),
+                            ),
 
                             _selected == false
                                 ? Text(
@@ -603,6 +694,8 @@ class _LikortSignupState extends State<LikortSignup> {
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
                                     _submitForm();
+                                    signUpWithEmailAndPassword(_emailController.text, _passwordController.text);
+
                                     setState(() {
                                       _selected = true;
                                     });

@@ -8,7 +8,7 @@ import '../models/likortartproduct.dart';
 
 import '../models/likortfavorites.dart';
 import '../models/likortstore.dart';
-import '../models/likortusers.dart';
+import '../models/likortusers.dart' as userLikort;
 import '../widgets/customappbar.dart';
 
 class LikortHomeScreen extends StatefulWidget {
@@ -472,7 +472,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                   favoriteProducts.add(product);
                                                   favorites.add(Favorites(
                                                     id: const Uuid().v4(),
-                                                    userId: Provider.of<User>(
+                                                    userId: Provider.of<userLikort.User>(
                                                             context,
                                                             listen: false)
                                                         .users

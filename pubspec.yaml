@@ -46,14 +46,17 @@ dependencies:
   intl_utils: ^2.8.7
   geolocator: ^13.0.2
   uuid: ^4.5.1
-  firebase_core: ^3.8.0
-  firebase_auth: ^5.3.3
+  firebase_core: ^3.11.0
+  firebase_auth: ^5.4.2
   libphonenumber_web: ^0.3.2
   url_launcher: ^6.3.1
   flutter_rating_bar: ^4.0.1
   image_cropper: ^8.0.2
   syncfusion_flutter_charts: ^28.1.35
   http: ^1.2.2
+  cloud_firestore: ^5.6.3
+  flutter_inappwebview: ^6.1.5
+  firebase_storage: ^12.4.2
 
 dev_dependencies:
   flutter_test:

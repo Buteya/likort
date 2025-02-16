@@ -1,10 +1,11 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/likortusers.dart';
+import '../models/likortusers.dart' as userLikort;
 
 class LikortLogin extends StatefulWidget {
   const LikortLogin({super.key});
@@ -14,12 +15,35 @@ class LikortLogin extends StatefulWidget {
 }
 
 class _LikortLoginState extends State<LikortLogin> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  late bool _isLoading = false;
+
+  Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      if(email == userCredential.user!.email){
+        Navigator.pushNamed(context, '/likorthomescreen');
+      }
+      return userCredential;
+
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      }
+      return null; // or handle the error appropriately
+    }
+  }
 
   Future<void> _login(String email, String password) async {
-    User? users = Provider.of<User>(context, listen: false);
+    userLikort.User? users = Provider.of<userLikort.User>(context, listen: false);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? encodedPassword;
     String? prefEmail;
@@ -44,7 +68,7 @@ class _LikortLoginState extends State<LikortLogin> {
               users.users.any((user) => user.email == email)) &&
           decodedPassword == password) {
         users.updateUser(
-          User(
+          userLikort.User(
             id: currentUser.id,
             firstname: currentUser.firstname,
             lastname: currentUser.lastname,
@@ -105,7 +129,7 @@ class _LikortLoginState extends State<LikortLogin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Form(
+      body: _isLoading?const Center(child: CircularProgressIndicator(),):Form(
         key: _formKey,
         child: Column(
           children: [
@@ -159,7 +183,11 @@ class _LikortLoginState extends State<LikortLogin> {
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    _login(_emailController.text, _passwordController.text);
+                      signInWithEmailAndPassword(_emailController.text, _passwordController.text).then((_){
+                        _login(_emailController.text, _passwordController.text);
+                      });setState(() {
+                        _isLoading = true;
+                      });
                     _emailController.clear();
                     _passwordController.clear();
                   }
