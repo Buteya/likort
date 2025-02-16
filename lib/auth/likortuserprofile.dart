@@ -33,6 +33,7 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
   final userId = FirebaseAuth.instance.currentUser!.uid;
   String? _imageUrl; // Store the Firebase Storage URL here
   XFile? _pickedImage; // Store the picked image here
+  String? downloadUrl = ''; // Initialize downloadUrl to null
 
   @override
   void initState() {
@@ -177,21 +178,57 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
     }
   }
 
-  Future<void> updateUserDocument(String userId,String phone,String firstname,String lastname,XFile imageUrl,) async {
+  Future<void> updateUserDocument(
+      String userId,
+      String phone,
+      String firstname,
+      String lastname,
+      XFile? imageUrl, // Make imageUrl nullable
+      ) async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       // Get a reference to the document
-      DocumentReference userDocRef =
+      DocumentReference userDocRef=
       FirebaseFirestore.instance.collection('users').doc(userId);
 
 
+
+        final storageRef = FirebaseStorage.instance.ref();
+        final imageRef = storageRef.child('user_images/$userId/${imageUrl?.name}');
+
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        // You can add other metadata here if needed
+        //customMetadata: {
+        //   'key': 'value',
+        // },
+      );
+
+      if (kIsWeb) {
+          // For web, use putData with Uint8List
+          final bytes = await imageUrl?.readAsBytes();
+          await imageRef.putData(bytes!,metadata);
+        } else {
+          // For mobile/desktop, use putFile with File
+          await imageRef.putFile(File(imageUrl!.path),metadata);
+        }
+
+        downloadUrl = await imageRef.getDownloadURL();
       // Data to update
       Map<String, dynamic> dataToUpdate = {
         'firstname': firstname,
         'lastname': lastname,
         'phone': phone,
-        'imageUrl':'${imageUrl.path.toString().substring(5)}/${imageUrl.name}',
         'lastUpdated': FieldValue.serverTimestamp(), // Update with server timestamp
       };
+
+      
+      // Only add imageUrl if it's not null
+      if (downloadUrl != "") {
+        dataToUpdate['imageUrl'] = downloadUrl;
+      }
 
       // Update the document
       await userDocRef.update(dataToUpdate);
@@ -204,6 +241,9 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
         print('Error updating user document: $e');
       }
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -344,9 +384,9 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(15.0),
-                        child: imageAvailable!.isNotEmpty
+                        child: _pickedImage != null
                             ? Image.network(
-                          imageAvailable!,
+                          _pickedImage!.path,
                                 width: screenSize.width * .83,
                                 height: screenSize.height / 2.2,
                                 fit: BoxFit.contain,
@@ -359,7 +399,7 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                                     width: screenSize.width * .83,
                                     height: screenSize.height / 2.3,
                                     fit: BoxFit.contain,
-                                      loadingBuilder: (BuildContext context, child,
+                                      loadingBuilder: (BuildContext context,Widget child,
                                           ImageChunkEvent? loadingProgress) {
                                         if (loadingProgress == null) {
                                           return child;

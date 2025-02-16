@@ -693,7 +693,7 @@ class _LikortSignupState extends State<LikortSignup> {
                               child: ElevatedButton(
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
-                                    _submitForm();
+                                    // _submitForm();
                                     signUpWithEmailAndPassword(_emailController.text, _passwordController.text);
 
                                     setState(() {

@@ -1,45 +1,37 @@
 {
   "project_info": {
-    "project_number": "481238350742",
-    "project_id": "likort-creatives-app",
-    "storage_bucket": "likort-creatives-app.firebasestorage.app"
+    "project_number": "813285727134",
+    "firebase_url": "https://shop-app-43b6d-default-rtdb.firebaseio.com",
+    "project_id": "shop-app-43b6d",
+    "storage_bucket": "shop-app-43b6d.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:481238350742:android:7ba4090622d2f2e7453bb7",
-        "android_client_info": {
-          "package_name": "com.example"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCjr2cPgjv2U0jcZ0Jf-3T8bJckOqDx0-E"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:481238350742:android:ff234917abc9c892453bb7",
+        "mobilesdk_app_id": "1:813285727134:android:9627b6b9beeeedb212148f",
         "android_client_info": {
           "package_name": "com.example.likort"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "813285727134-ak0rf1hpffp2cdejl786pkkdp673ulke.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCjr2cPgjv2U0jcZ0Jf-3T8bJckOqDx0-E"
+          "current_key": "AIzaSyCGjbRgvgWPvxkX1M19MbKyEBJldZ-CqIM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "813285727134-ak0rf1hpffp2cdejl786pkkdp673ulke.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

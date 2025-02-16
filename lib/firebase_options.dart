@@ -41,47 +41,54 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAU_B0GxG_CYspQKdOHSOJq_HeWYHORBVQ',
-    appId: '1:481238350742:web:9cf98e529fa54943453bb7',
-    messagingSenderId: '481238350742',
-    projectId: 'likort-creatives-app',
-    authDomain: 'likort-creatives-app.firebaseapp.com',
-    storageBucket: 'likort-creatives-app.firebasestorage.app',
+    apiKey: 'AIzaSyB2qhMdgzh9_wr963DopW91XcIYdrtgf6s',
+    appId: '1:813285727134:web:26ca30d84dad5a1b12148f',
+    messagingSenderId: '813285727134',
+    projectId: 'shop-app-43b6d',
+    authDomain: 'shop-app-43b6d.firebaseapp.com',
+    databaseURL: 'https://shop-app-43b6d-default-rtdb.firebaseio.com',
+    storageBucket: 'shop-app-43b6d.appspot.com',
+    measurementId: 'G-KBRK6P0WRL',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCjr2cPgjv2U0jcZ0Jf-3T8bJckOqDx0-E',
-    appId: '1:481238350742:android:ff234917abc9c892453bb7',
-    messagingSenderId: '481238350742',
-    projectId: 'likort-creatives-app',
-    storageBucket: 'likort-creatives-app.firebasestorage.app',
+    apiKey: 'AIzaSyCGjbRgvgWPvxkX1M19MbKyEBJldZ-CqIM',
+    appId: '1:813285727134:android:9627b6b9beeeedb212148f',
+    messagingSenderId: '813285727134',
+    projectId: 'shop-app-43b6d',
+    databaseURL: 'https://shop-app-43b6d-default-rtdb.firebaseio.com',
+    storageBucket: 'shop-app-43b6d.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD_g59hXvtNvZXGzjUMsZlw7uV6nq-4934',
-    appId: '1:481238350742:ios:c01c93484417d7df453bb7',
-    messagingSenderId: '481238350742',
-    projectId: 'likort-creatives-app',
-    storageBucket: 'likort-creatives-app.firebasestorage.app',
+    apiKey: 'AIzaSyAw3Kcr7kJuNtNgXP7FgYM02L4EgD3IMVk',
+    appId: '1:813285727134:ios:030ff577450280a012148f',
+    messagingSenderId: '813285727134',
+    projectId: 'shop-app-43b6d',
+    databaseURL: 'https://shop-app-43b6d-default-rtdb.firebaseio.com',
+    storageBucket: 'shop-app-43b6d.appspot.com',
     iosBundleId: 'com.example.likort',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD_g59hXvtNvZXGzjUMsZlw7uV6nq-4934',
-    appId: '1:481238350742:ios:c01c93484417d7df453bb7',
-    messagingSenderId: '481238350742',
-    projectId: 'likort-creatives-app',
-    storageBucket: 'likort-creatives-app.firebasestorage.app',
+    apiKey: 'AIzaSyAw3Kcr7kJuNtNgXP7FgYM02L4EgD3IMVk',
+    appId: '1:813285727134:ios:030ff577450280a012148f',
+    messagingSenderId: '813285727134',
+    projectId: 'shop-app-43b6d',
+    databaseURL: 'https://shop-app-43b6d-default-rtdb.firebaseio.com',
+    storageBucket: 'shop-app-43b6d.appspot.com',
     iosBundleId: 'com.example.likort',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAU_B0GxG_CYspQKdOHSOJq_HeWYHORBVQ',
-    appId: '1:481238350742:web:af2a0eac97754263453bb7',
-    messagingSenderId: '481238350742',
-    projectId: 'likort-creatives-app',
-    authDomain: 'likort-creatives-app.firebaseapp.com',
-    storageBucket: 'likort-creatives-app.firebasestorage.app',
+    apiKey: 'AIzaSyB2qhMdgzh9_wr963DopW91XcIYdrtgf6s',
+    appId: '1:813285727134:web:f64bb5783d941daf12148f',
+    messagingSenderId: '813285727134',
+    projectId: 'shop-app-43b6d',
+    authDomain: 'shop-app-43b6d.firebaseapp.com',
+    databaseURL: 'https://shop-app-43b6d-default-rtdb.firebaseio.com',
+    storageBucket: 'shop-app-43b6d.appspot.com',
+    measurementId: 'G-TCVDR2D91W',
   );
 
 }
