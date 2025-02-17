@@ -1,11 +1,18 @@
 
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/likortstore.dart';
-import '../models/likortusers.dart';
+import '../models/likortusers.dart' as userLikort;
 
 class LikortBuildCreatorStore extends StatefulWidget {
   const LikortBuildCreatorStore({super.key});
@@ -21,6 +28,10 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
   late TextEditingController _storeNameController;
   late TextEditingController _storeDescriptionController;
   final List<String> _uploadedImages = []; // To store uploaded image paths
+  bool _isLoading = false;
+  var uuid = const Uuid();
+  List<XFile> uploadImages = [];
+
 
   @override
   void initState() {
@@ -34,6 +45,145 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
     _storeNameController.dispose();
     _storeDescriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> buildCreatorStore(String storeName,String description,List<XFile> images) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      final id = uuid.v4();
+      await prefs.setString('id', id);
+      List<String> downloadUrls = [];
+
+      Map<String, dynamic> storeData = {
+        'userId': userId,
+        'created': FieldValue.serverTimestamp(),
+        'imageUrls': downloadUrls,
+        'reviews': [],
+        'id': id,
+        'name': storeName,
+        'description': description,
+        'products': [],
+        'notifications': [],
+        'orders': [],
+        'lastUpdated': FieldValue.serverTimestamp(), // Update with server timestamp
+      };
+      CollectionReference usersCollection =
+      FirebaseFirestore.instance.collection('stores');
+      await usersCollection.doc(userId).set(storeData).then((_) {
+        if (kDebugMode) {
+          print('Store data saved successfully!');
+        }
+      }).catchError((error) {
+        if (kDebugMode) {
+          print('Error saving user data: $error');
+        }
+        throw Exception('Failed to save store data: $error');
+      });
+      DocumentReference userDocRef=
+      FirebaseFirestore.instance.collection('users').doc(userId);
+      final storageRef = FirebaseStorage.instance.ref();
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg', // Default content type
+      );
+      // if (images.isEmpty) {
+      //   return downloadUrls; // Return empty list if no images
+      // }
+      for(final imageFile in images){
+        final imageRef = storageRef.child('creator_store_images/$userId/${imageFile.name}');
+        if (kIsWeb) {
+          // For web, use putData with Uint8List
+          final bytes = await imageFile.readAsBytes();
+          await imageRef.putData(bytes, metadata);
+        } else {
+          // For mobile/desktop, use putFile with File
+          await imageRef.putFile(File(imageFile.path), metadata);
+        }
+        final downloadUrl = await imageRef.getDownloadURL();
+        downloadUrls.add(downloadUrl);
+      }
+
+      Map<String, dynamic> dataToUpdate = {
+        'lastUpdated': FieldValue.serverTimestamp(), // Update with server timestamp
+      };
+
+
+      // Only add imageUrl if it's not null
+      if (id != "") {
+        dataToUpdate['storeId'] = id;
+      }
+
+      // Update the document
+      await userDocRef.update(dataToUpdate);
+
+      DocumentReference storeDocRef=
+      FirebaseFirestore.instance.collection('stores').doc(userId);
+
+      if(downloadUrls.isNotEmpty){
+        storeData['imageUrls'] = downloadUrls;
+      }
+
+      await storeDocRef.update(storeData);
+
+        Navigator.of(context).pushReplacementNamed('/likortmanagestore');
+
+
+      // final metadata = SettableMetadata(
+      //   contentType: 'image/jpeg',
+      //   // You can add other metadata here if needed
+      //   //customMetadata: {
+      //   //   'key': 'value',
+      //   // },
+      // );
+      //
+      // if (kIsWeb) {
+      //   // For web, use putData with Uint8List
+      //   final bytes = await imageUrl?.readAsBytes();
+      //   await imageRef.putData(bytes!,metadata);
+      // } else {
+      //   // For mobile/desktop, use putFile with File
+      //   await imageRef.putFile(File(imageUrl!.path),metadata);
+      // }
+      // //
+      // downloadUrl = await imageRef.getDownloadURL();
+      // // Data to update
+      // Map<String, dynamic> dataToUpdate = {
+      //   'userId': userId,
+      //   'created': DateTime.now(),
+      //   'imageUrl': images,
+      //   'reviews': [],
+      //   'id': id,
+      //   'name': storeName,
+      //   'description': description,
+      //   'products': [],
+      //   'notifications': [],
+      //   'orders': [],
+      //   'lastUpdated': FieldValue.serverTimestamp(), // Update with server timestamp
+      // };
+      //
+      //
+      // // Only add imageUrl if it's not null
+      // if (downloadUrl != "") {
+      //   dataToUpdate['imageUrl'] = downloadUrl;
+      // }
+
+      // Update the document
+      // await userDocRef.update(dataToUpdate);
+
+      if (kDebugMode) {
+        print('Store document updated successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating store document: $e');
+      }
+    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   // Function to handle image upload (replace with your actual implementation)
@@ -59,7 +209,7 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
       try{
         store.addStore(
           Store(
-            userId: Provider.of<User>(context, listen: false).users.last.id,
+            userId: Provider.of<userLikort.User>(context, listen: false).users.last.id,
             created: DateTime.now(),
             imageUrl: _uploadedImages,
             reviews: [],
@@ -129,6 +279,7 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
     if (pickedFile != null) {
       setState(() {
         _uploadedImages.add(pickedFile.path);
+        uploadImages.add(pickedFile);
       });
     }
   }
@@ -138,6 +289,7 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
     if (pickedFile != null) {
       setState(() {
         _uploadedImages[index] = pickedFile.path;
+        uploadImages[index] = pickedFile;
       });
     }
   }
@@ -295,7 +447,7 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
                     ),
                   ElevatedButton(
                     onPressed:
-                        _currentStep < totalSteps - 1 ? _nextStep : _submitForm,
+                        _currentStep < totalSteps - 1 ? _nextStep : ()=>buildCreatorStore(_storeNameController.text,_storeDescriptionController.text,uploadImages),
                     child:
                         Text(_currentStep < totalSteps - 1 ? 'Next' : 'Submit'),
                   ),

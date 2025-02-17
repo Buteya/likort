@@ -1,11 +1,18 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/likortartproduct.dart';
 import '../models/likortstore.dart';
-import '../models/likortusers.dart';
+import '../models/likortusers.dart' as userLikort;
 
 class LikortCreateArtProduct extends StatefulWidget {
   const LikortCreateArtProduct({super.key});
@@ -21,17 +28,177 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
   final _descriptionController = TextEditingController();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
-
+  bool _isLoading = false;
+  String? downloadUrl = '';
+  var uuid = const Uuid();
   final ImagePicker _picker = ImagePicker();
   final List<String> _images = [];
+  final List<XFile> _imagesImages = [];
+  String? fetchedFieldValue;
+
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _images.add(pickedFile.path);
+        _imagesImages.add(pickedFile);
       });
     }
   }
+
+
+  Future<void> buildProduct(String productName,String description,String price,String typeOfArt,String quantity,List<XFile> images) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      final id = uuid.v4();
+      await prefs.setString('id', id);
+      List<String> downloadUrls = [];
+      List<Map<String,dynamic>> products = [];
+
+
+   Map<String,dynamic>? data;
+      try {
+        // Replace with your actual collection and document ID
+        const collectionName = 'stores';
+        final documentID = userId;
+        const fieldName = 'id'; //the name of the field you want
+
+        final docRef = FirebaseFirestore.instance
+            .collection(collectionName)
+            .doc(documentID);
+        final docSnap = await docRef.get();
+
+        if (docSnap.exists) {
+          // Access the field.  Handle potential null values.
+          final data = docSnap.data();
+          final fieldValue = data?[fieldName]; //safe access using ?
+          setState(() {
+            fetchedFieldValue = fieldValue.toString(); //convert to string for display
+          });
+          print(fetchedFieldValue);
+        } else {
+          setState(() {
+            fetchedFieldValue = 'Document does not exist.';
+          });
+          print(fetchedFieldValue);
+        }
+      } catch (e) {
+        setState(() {
+          fetchedFieldValue = 'Error fetching data: $e';
+        });
+        print(fetchedFieldValue);
+      } finally {
+        setState(() {
+          // isLoading = false; //hide the loading indicator
+        });
+        print(fetchedFieldValue);
+      }
+      Map<String, dynamic> productData = {
+        'id': id,
+        'name': productName,
+        'description': description,
+        'price': double.parse(price),
+        'imageUrls': downloadUrls,
+        'storeId': fetchedFieldValue,
+        'typeOfArt': typeOfArt,
+        'quantity': int.parse(quantity),
+        'lastUpdated': FieldValue.serverTimestamp(), // Update with server timestamp
+      };
+      CollectionReference usersCollection =
+      FirebaseFirestore.instance.collection('products');
+      await usersCollection.doc(userId).set(productData).then((_) {
+        if (kDebugMode) {
+          print('Product data saved successfully!');
+        }
+      }).catchError((error) {
+        if (kDebugMode) {
+          print('Error saving user data: $error');
+        }
+        throw Exception('Failed to save product data: $error');
+      });
+      DocumentReference storeDocRef=
+      FirebaseFirestore.instance.collection('stores').doc(userId);
+      final storageRef = FirebaseStorage.instance.ref();
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg', // Default content type
+      );
+      // if (images.isEmpty) {
+      //   return downloadUrls; // Return empty list if no images
+      // }
+      for(final imageFile in images){
+        final imageRef = storageRef.child('product_images/$userId/${imageFile.name}');
+        if (kIsWeb) {
+          // For web, use putData with Uint8List
+          final bytes = await imageFile.readAsBytes();
+          await imageRef.putData(bytes, metadata);
+        } else {
+          // For mobile/desktop, use putFile with File
+          await imageRef.putFile(File(imageFile.path), metadata);
+        }
+        final downloadUrl = await imageRef.getDownloadURL();
+        downloadUrls.add(downloadUrl);
+      }
+
+      Map<String, dynamic> productToUpdate = {
+        'id': id,
+        'name': productName,
+        'description': description,
+        'price': double.parse(price),
+        'imageUrls': downloadUrls,
+        'storeId': fetchedFieldValue,
+        'typeOfArt': typeOfArt,
+        'quantity': int.parse(quantity),
+      };
+
+      Map<String, dynamic> dataToUpdate = {};
+
+      // Only add imageUrl if it's not null
+      if (id != "") {
+        // List<String> ids = [];
+        // ids.add(id);
+        products.add(productToUpdate);
+        dataToUpdate['products'] = products;
+      }
+
+      // Update the document
+      await storeDocRef.update(dataToUpdate);
+
+      DocumentReference productDocRef=
+      FirebaseFirestore.instance.collection('products').doc(userId);
+
+      if(downloadUrls.isNotEmpty){
+        productData['imageUrls'] = downloadUrls;
+      }
+
+      await productDocRef.update(productData);
+
+      Navigator.of(context).pushReplacementNamed('/likortmanagestore');
+
+      if (kDebugMode) {
+        print('Store document updated successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating store document: $e');
+      }
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+  //
+  // // Function to handle image upload (replace with your actual implementation)
+  // Future<void> _uploadImage() async {
+  //   // Simulate image upload
+  //   await Future.delayed(const Duration(seconds: 1));
+  //   setState(() {
+  //     _uploadedImages.add('path/to/uploaded/image');
+  //   });
+  // }
 
   // Function to handle form submission
   void _submitForm() {
@@ -79,7 +246,7 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
       try {
         store.addStore(
           Store(
-            userId: Provider.of<User>(context, listen: false).users.last.id,
+            userId: Provider.of<userLikort.User>(context, listen: false).users.last.id,
             created: store.stores.last.created,
             imageUrl: store.stores.last.imageUrl,
             reviews: [],
@@ -256,7 +423,8 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  _submitForm();
+                  // _submitForm();
+                  buildProduct(_nameController.text, _descriptionController.text,_priceController.text, _typeOfArtController.text, _quantityController.text, _imagesImages);
                 },
                 child: const Text('create art'),
               ),

@@ -192,9 +192,6 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
       // Get a reference to the document
       DocumentReference userDocRef=
       FirebaseFirestore.instance.collection('users').doc(userId);
-
-
-
         final storageRef = FirebaseStorage.instance.ref();
         final imageRef = storageRef.child('user_images/$userId/${imageUrl?.name}');
 

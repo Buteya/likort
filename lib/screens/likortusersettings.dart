@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/likortusers.dart';
+import '../models/likortusers.dart' as userLikort;
 
 class LikortUserSettings extends StatefulWidget {
   const LikortUserSettings({super.key});
@@ -11,6 +14,69 @@ class LikortUserSettings extends StatefulWidget {
 }
 
 class _LikortUserSettingsState extends State<LikortUserSettings> {
+  Map<String, dynamic> data = {};
+  String userId ='';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+     userId = FirebaseAuth.instance.currentUser!.uid;
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final userData = await getUserData(userId);
+      if (userData != null) {
+        setState(() {
+          data = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<Map<String, dynamic>?> getUserData(String userId) async {
+    try {
+      CollectionReference usersCollection =
+      FirebaseFirestore.instance.collection('users');
+      DocumentSnapshot documentSnapshot =
+      await usersCollection.doc(userId).get();
+
+      if (documentSnapshot.exists) {
+        // Document exists, get the data
+        Map<String, dynamic> userData =
+        documentSnapshot.data() as Map<String, dynamic>;
+        if (kDebugMode) {
+          print('User data retrieved successfully: $userData');
+        }
+        return userData;
+      } else {
+        // Document does not exist
+        if (kDebugMode) {
+          print('User document does not exist for userId: $userId');
+        }
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting user data: $e');
+      }
+      return null;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final List<String> items = ['Change Password', 'Change Delivery Location', 'Create Store','Manage Store', 'Delete Account',];
@@ -63,11 +129,11 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
                   // Handle menu selection here
                   if (value == 2) {
                     Navigator.of(context)
-                        .pushReplacementNamed('/likortusersettings');
+                        .pushNamed('/likortusersettings');
                   }
                   if (value == 0) {
                     Navigator.of(context)
-                        .pushReplacementNamed('/likorthomescreen');
+                        .pushNamed('/likorthomescreen');
                   }
                   // if (value == 1) {
                   //   Navigator.of(context)
@@ -88,10 +154,7 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
               onTap: () {
                 Navigator.of(context).pushNamed('/likortuserprofile');
               },
-              child: Provider.of<User>(
-                context,
-                listen: false,
-              ).users.last.imageUrl.isEmpty
+              child: data['imageUrl'].toString() == ""
                   ? const CircleAvatar(
                 child: Icon(
                   Icons.person,
@@ -100,10 +163,7 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
                   : CircleAvatar(
                 backgroundColor: Colors.transparent,
                 backgroundImage: NetworkImage(
-                  Provider.of<User>(
-                    context,
-                    listen: false,
-                  ).users.last.imageUrl,
+                  data['imageUrl'].toString()
                 ),
               ),
             ),
@@ -118,7 +178,7 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
       //     Center(child: Text('delete account')),
       //   ],
       // ),
-        body: ListView.builder(
+        body: _isLoading?Center(child: CircularProgressIndicator(),):ListView.builder(
           itemCount: items.length,
           itemBuilder: (context, index) {
             return ListTile(
@@ -127,10 +187,39 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
               onTap: () {
                 // ...
                 if(items[index] == 'Create Store'){
-                  Navigator.of(context).pushReplacementNamed( '/lkortbuildcreatorstore');
+                  if(data['storeId'] == ""){
+                    Navigator.of(context).pushNamed( '/lkortbuildcreatorstore');
+                  }else {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Store Exists'),
+                          content: const Text('User has an existing store?'),
+                          actions: [
+                            // TextButton(
+                            //   onPressed: () {
+                            //     // Handle delete action
+                            //     print('Deleting ${items[index]}');
+                            //     Navigator.of(context).pop(); // Close the popup
+                            //   },
+                            //   child: const Text('Delete'),
+                            // ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop(); // Close the popup
+                              },
+                              child: const Text('Ok'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+
                 }
                 if(items[index] == 'Manage Store'){
-                  Navigator.of(context).pushReplacementNamed( '/likortmanagestore');
+                  Navigator.of(context).pushNamed( '/likortmanagestore');
                 }
                 if(items[index] == items.last){
                   showDialog(
