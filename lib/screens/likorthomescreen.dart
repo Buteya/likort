@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,45 +29,36 @@ class LikortHomeScreen extends StatefulWidget {
 }
 
 class _LikortHomeScreenState extends State<LikortHomeScreen> {
+  bool _isLoading = false;
+  RangeValues currentRangeValues =  const RangeValues(0, 100);
   final _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _searchBarVisible = true;
   String? _selectedCategory; // Initial filter category
-  double get minPrice => filteredProducts
-      .map((product) => product.price)
-      .reduce((a, b) => a < b ? a : b);
-  double get maxPrice => filteredProducts
-      .map((product) => product.price)
-      .reduce((a, b) => a > b ? a : b);
-  RangeValues _priceRange = const RangeValues(0, 100);
-  RangeValues get priceRange {
-    if (_priceRange.start == 0 && _priceRange.end == 0) {
-      _priceRange = RangeValues(
-          minPrice, maxPrice); // Initialize with actual min and max prices
-    }
-    return _priceRange;
-  }
-
   late FocusNode _searchFocusNode;
-  List<Product> filteredProducts = [];
-  List<Product> _categorySearch = [];
-  Set<String> get categories =>
-      _categorySearch.map((product) => product.typeOfArt).toSet();
+  List<Map<String, dynamic>> filteredProducts = [];
+  // List<Map<String, dynamic>> _categorySearch = [];
+  Set<dynamic> get categories =>
+      filteredProducts.map((product) => product['typeOfArt']).toSet();
+  final CollectionReference _itemsCollection = FirebaseFirestore.instance
+      .collection('products'); //Change myCollection to your collection name
+  String storeName = '';
+  List<Map<String,dynamic>> stores = [];
 
   @override
   void initState() {
     super.initState();
-    _categorySearch = Provider.of<Product>(context, listen: false).products;
-    filteredProducts = Provider.of<Product>(context, listen: false).products;
+    _loadUserData();
+    loadStoreData();
     _scrollController.addListener(_scrollListener);
     Provider.of<Product>(context, listen: false)
         .favoriteProducts; // Load favorites on initialization
   }
 
   void _filterProducts(String query) {
-    final List<Product> filtered =
-        Provider.of<Product>(context, listen: false).products.where((product) {
-      final productNameLower = product.name.toLowerCase();
+    final List<Map<String, dynamic>> filtered =
+        filteredProducts.where((product) {
+      final productNameLower = product['name'].toLowerCase();
       final queryLower = query.toLowerCase();
       return productNameLower.contains(queryLower);
     }).toList();
@@ -84,12 +77,10 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   void _applyFilters() {
     setState(() {
       if (_selectedCategory == 'All') {
-        filteredProducts =
-            Provider.of<Product>(context, listen: false).products;
+        filteredProducts = filteredProducts;
       } else {
-        filteredProducts =
-            Provider.of<Product>(context, listen: false).products.where((item) {
-          return item.typeOfArt == _selectedCategory;
+        filteredProducts = filteredProducts.where((item) {
+          return item['typeOfArt'] == _selectedCategory;
         }).toList();
       }
     });
@@ -113,34 +104,98 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   }
 
   // Search function
-  List<Product> searchProductsByType(
-      List<Product> allProducts, String productType) {
+  List<Map<String, dynamic>> searchProductsByType(
+      List<Map<String, dynamic>> allProducts, String productType) {
     return allProducts
-        .where((product) => product.typeOfArt == productType)
+        .where((product) => product['typeOfArt'] == productType)
         .toList();
   }
 
-  String getStoreName(String storeId) {
-    // Find the store with the matching storeId
-    final store = Provider.of<Store>(context, listen: false).stores.firstWhere(
-          (store) => store.id == storeId,
-          orElse: () => Store(
-              userId: '',
-              created: DateTime.now(),
-              imageUrl: [],
-              reviews: [],
-              id: '',
-              name: '',
-              description: '',
-              products: [],
-              notifications: [],
-              orders: []), // Handle case where store is not found
-        );
+  Future<void> loadStoreData() async{
+    try {
+      final userData =  await fetchStoreData();
+      if (userData != null) {
+        setState(() {
+          stores = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
+  String getStoreName(String storeId)  {
+    final store = stores.firstWhere(
+      (store) => store['id'] == storeId,
+      orElse: () => {}, // Handle case where store is not found
+    );
     // Return the store name if found, otherwise return an empty string or a default value
     return store != null
-        ? store.name
+        ? store['name']
         : ''; // Or a default value like 'Unknown Store'
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final userData = await fetchData();
+      if (userData != null) {
+        setState(() {
+          filteredProducts = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchStoreData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('stores').get();
+      List<Map<String, dynamic>> items = [];
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        items.add(doc.data() as Map<String, dynamic>);
+      }
+      print(items);
+      return items;
+    } catch (e) {
+      print("Error fetching data: $e");
+      return []; //Return an empty list in case of error
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchData() async {
+    try {
+      QuerySnapshot querySnapshot = await _itemsCollection.get();
+      List<Map<String, dynamic>> items = [];
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        items.add(doc.data() as Map<String, dynamic>);
+      }
+      print(items);
+      return items;
+    } catch (e) {
+      print("Error fetching data: $e");
+      return []; //Return an empty list in case of error
+    }
   }
 
   @override
@@ -154,24 +209,13 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     final String appTitle = widget.title;
     final ThemeMode appThemeMode = widget.themeMode;
     final Function() toggleThemeMode = widget.toggleThemeMode;
-    // final productProvider = Provider.of<Product>(context);
-    final productList = Provider.of<Product>(context, listen: false).products;
-    // double minPrice = productList.isNotEmpty
-    //     ? productList
-    //         .map((product) => product.price)
-    //         .reduce((a, b) => a < b ? a : b)
-    //     : 0.0;
-    double maxPrice = productList.isNotEmpty
-        ? productList
-            .map((product) => product.price)
-            .reduce((a, b) => a > b ? a : b)
-        : 100.0;
-    RangeValues currentRangeValues = const RangeValues(0, 0);
+    final productList = filteredProducts;
+
     final favorites = Provider.of<Favorites>(
       context,
       listen: false,
     );
-    // List<Product> favoriteProducts = [];
+    _selectedCategory = categories.first;
 
     return Scaffold(
       appBar: PreferredSize(
@@ -261,79 +305,46 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                       context: context,
                                       builder: (context) {
                                         return AlertDialog(
-                                          title: const Text('Filter art by :'),
+                                          title: const Text('Filter art by'),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Text('Type of art'),
+                                              const Text('Type of art',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
                                               const Divider(),
-                                              DropdownButton<String>(
-                                                value: _selectedCategory,
-                                                items: categories
-                                                    .map(
-                                                      (category) =>
-                                                          DropdownMenuItem<
-                                                              String>(
-                                                        value: category,
-                                                        child: Text(category),
-                                                      ),
-                                                    )
-                                                    .toList(),
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    _selectedCategory = value!;
-                                                  });
-                                                },
-                                              ),
-                                              SizedBox(
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height *
-                                                    .01,
-                                              ),
-                                              const Text('Price'),
-                                              const Divider(),
-                                              //Price range slider (example)
-                                              RangeSlider(
-                                                values: currentRangeValues,
-                                                max: maxPrice,
-                                                divisions: 100,
-                                                labels: RangeLabels(
-                                                  currentRangeValues.start
-                                                      .round()
-                                                      .toString(),
-                                                  currentRangeValues.end
-                                                      .round()
-                                                      .toString(),
+                                              Padding(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: SizedBox(
+                                                  width: double.infinity,
+                                                  child: DropdownButton<String>(
+                                                    isExpanded: true,
+                                                    value: _selectedCategory,
+                                                    items: categories
+                                                        .map(
+                                                          (category) =>
+                                                              DropdownMenuItem<
+                                                                  String>(
+                                                            value: category,
+                                                            child: Text(category,)
+                                                          ),
+                                                        )
+                                                        .toList(),
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedCategory = value!;
+                                                      });
+                                                    },
+                                                  ),
                                                 ),
-                                                onChanged:
-                                                    (RangeValues values) {
-                                                  setState(() {
-                                                    currentRangeValues =
-                                                        values;
-                                                    filteredProducts =
-                                                        Provider.of<Product>(
-                                                                context,
-                                                                listen: false)
-                                                            .products
-                                                            .where((item) {
-                                                      return item.price ==
-                                                          double.tryParse(
-                                                              currentRangeValues
-                                                                  .toString());
-                                                    }).toList();
-                                                  });
-                                                },
-                                              )
+                                              ),
                                             ],
                                           ),
                                           actions: [
                                             TextButton(
                                               onPressed: () {
-                                                _applyFilters(); // Apply filters when dialog is closed
+                                                // _applyFilters(); // Apply filters when dialog is closed
                                                 Navigator.of(context).pop();
                                               },
-                                              child: const Text('Apply'),
+                                              child: const Text('Cancel'),
                                             ),
                                           ],
                                         );
@@ -358,7 +369,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 29.0, bottom: 20.0),
+            padding: const EdgeInsets.only(left: 29.0, bottom: 10.0),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -408,154 +419,208 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                       .size
                       .height // Adjust height when search bar is visible
                   : MediaQuery.of(context).size.height,
-              child: Consumer<Product>(builder: (context, product, child) {
-                return product.products.isEmpty
-                    ? const Center(
-                        child: Text('No Art to display'),
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: GridView.builder(
-                            controller: _scrollController,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2, // Number of items per row
-                              crossAxisSpacing: 8.0, // Spacing between columns
-                              mainAxisSpacing: 8.0, // Spacing between rows
-                            ),
-                            itemCount: filteredProducts.length,
-                            itemBuilder: (context, index) {
-                              final product = filteredProducts[index];
-                              return InkWell(
-                                onTap: () {
-                                  Navigator.of(context)
-                                      .pushNamed('/likortproductdetail',arguments: index);
-                                },
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(15.0),
-                                      child: Image.network(
-                                        product.imageUrls[0],
-                                        width: screenSize.width * .83,
-                                        height: screenSize.height / 2.66,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              // product
-                                              //     // .toggleFavorite(product.products[0].id);
-                                              setState(() {
-                                                final favoriteProducts =
-                                                    Provider.of<Favorites>(
-                                                            context,listen: false,)
-                                                        .favorites
-                                                        .expand((fav) => fav
-                                                            .favoriteProducts)
-                                                        .toList();
-                                                final productIndex =
-                                                    favoriteProducts.indexWhere(
-                                                        (prod) =>
-                                                            prod.id ==
-                                                            product.id);
-                                                if (!favoriteProducts
-                                                    .contains(product)) {
-                                                  favoriteProducts.add(product);
-                                                  favorites.add(Favorites(
-                                                    id: const Uuid().v4(),
-                                                    userId: Provider.of<userLikort.User>(
-                                                            context,
-                                                            listen: false)
-                                                        .users
-                                                        .last
-                                                        .id,
-                                                    favoriteProducts:
-                                                        favoriteProducts,
-                                                  ));
-                                                }else if(favoriteProducts.contains(product)){
-                                                  setState(() {
-                                                    Provider.of<Favorites>(
-                                                      context,listen: false,)
-                                                        .favorites
-                                                        .expand((fav) => fav
-                                                        .favoriteProducts)
-                                                        .toList().removeAt(productIndex);
-                                                    favorites.removeFavorite(productIndex);
-
-                                                  });
-                                                }
-                                              });
-                                            },
-                                            child: favorites.favorites.any(
-                                                    (fav) => fav
-                                                        .favoriteProducts
-                                                        .contains(product))
-                                                ? Icon(
-                                                    Icons.favorite_rounded,
-                                                    color:  favorites.favorites.any(
-                                                            (fav) => fav
-                                                            .favoriteProducts
-                                                            .contains(product))
-                                                        ? Colors.red
-                                                        : Colors.grey,
-                                                  )
-                                                : Icon(
-                                                    Icons
-                                                        .favorite_border_rounded,
-                                                    color:  favorites.favorites.any(
-                                                            (fav) => fav
-                                                            .favoriteProducts
-                                                            .contains(product))
-                                                        ? Colors.red
-                                                        : Colors.grey,
-                                                  ),
-                                          ),
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: fetchData(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                    return snapshot.connectionState == ConnectionState.waiting
+                        ? Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : snapshot.hasError
+                            ? Center(child: Text('Error: ${snapshot.error}'))
+                            : snapshot.hasData
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    child: GridView.builder(
+                                        controller: _scrollController,
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount:
+                                              2, // Number of items per row
+                                          crossAxisSpacing:
+                                              8.0, // Spacing between columns
+                                          mainAxisSpacing:
+                                              8.0, // Spacing between rows
                                         ),
-                                        SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              .1,
-                                        )
-                                      ],
-                                    ),
-                                    Text(
-                                      product.name,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Text(
-                                      getStoreName(product.storeId),
-                                      style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      '\$${product.price}',
-                                      style:
-                                          Theme.of(context).textTheme.bodyLarge,
-                                    ),
-                                    SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              .1,
-                                    )
-                                  ],
-                                ),
-                              );
-                            }),
-                      );
-              }),
+                                        itemCount: filteredProducts.length,
+                                        itemBuilder: (context, index) {
+                                          return InkWell(
+                                            onTap: () {
+                                              Navigator.of(context).pushNamed(
+                                                  '/likortproductdetail',
+                                                  arguments: index);
+                                            },
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          15.0),
+                                                  child: Image.network(
+                                                    filteredProducts[index]
+                                                        ['imageUrls'][0],
+                                                    width:
+                                                        screenSize.width * .83,
+                                                    height: screenSize.height /
+                                                        2.66,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                                // Row(
+                                                //   mainAxisAlignment:
+                                                //       MainAxisAlignment.end,
+                                                //   children: [
+                                                //     Padding(
+                                                //       padding:
+                                                //           const EdgeInsets
+                                                //               .only(top: 8.0),
+                                                //       child: InkWell(
+                                                //         onTap: () {
+                                                //           // product
+                                                //           //     // .toggleFavorite(product.products[0].id);
+                                                //           setState(() {
+                                                //             final favoriteProducts =
+                                                //                 Provider.of<
+                                                //                         Favorites>(
+                                                //               context,
+                                                //               listen: false,
+                                                //             )
+                                                //                     .favorites
+                                                //                     .expand((fav) =>
+                                                //                         fav.favoriteProducts)
+                                                //                     .toList();
+                                                //             final productIndex =
+                                                //                 favoriteProducts
+                                                //                     .indexWhere((prod) =>
+                                                //                         prod.id ==
+                                                //                         product
+                                                //                             .id);
+                                                //             if (!favoriteProducts
+                                                //                 .contains(
+                                                //                     product)) {
+                                                //               favoriteProducts
+                                                //                   .add(
+                                                //                       product);
+                                                //               favorites.add(
+                                                //                   Favorites(
+                                                //                 id: const Uuid()
+                                                //                     .v4(),
+                                                //                 userId: Provider.of<
+                                                //                             userLikort
+                                                //                             .User>(
+                                                //                         context,
+                                                //                         listen:
+                                                //                             false)
+                                                //                     .users
+                                                //                     .last
+                                                //                     .id,
+                                                //                 favoriteProducts:
+                                                //                     favoriteProducts,
+                                                //               ));
+                                                //             } else if (favoriteProducts
+                                                //                 .contains(
+                                                //                     product)) {
+                                                //               setState(() {
+                                                //                 Provider.of<
+                                                //                         Favorites>(
+                                                //                   context,
+                                                //                   listen:
+                                                //                       false,
+                                                //                 )
+                                                //                     .favorites
+                                                //                     .expand((fav) => fav
+                                                //                         .favoriteProducts)
+                                                //                     .toList()
+                                                //                     .removeAt(
+                                                //                         productIndex);
+                                                //                 favorites
+                                                //                     .removeFavorite(
+                                                //                         productIndex);
+                                                //               });
+                                                //             }
+                                                //           });
+                                                //         },
+                                                //         child: favorites
+                                                //                 .favorites
+                                                //                 .any((fav) => fav
+                                                //                     .favoriteProducts
+                                                //                     .contains(
+                                                //                         product))
+                                                //             ? Icon(
+                                                //                 Icons
+                                                //                     .favorite_rounded,
+                                                //                 color: favorites.favorites.any((fav) => fav
+                                                //                         .favoriteProducts
+                                                //                         .contains(
+                                                //                             product))
+                                                //                     ? Colors
+                                                //                         .red
+                                                //                     : Colors
+                                                //                         .grey,
+                                                //               )
+                                                //             : Icon(
+                                                //                 Icons
+                                                //                     .favorite_border_rounded,
+                                                //                 color: favorites.favorites.any((fav) => fav
+                                                //                         .favoriteProducts
+                                                //                         .contains(
+                                                //                             product))
+                                                //                     ? Colors
+                                                //                         .red
+                                                //                     : Colors
+                                                //                         .grey,
+                                                //               ),
+                                                //       ),
+                                                //     ),
+                                                //     SizedBox(
+                                                //       width: MediaQuery.of(
+                                                //                   context)
+                                                //               .size
+                                                //               .width *
+                                                //           .1,
+                                                //     )
+                                                //   ],
+                                                // ),
+                                                Text(
+                                                  filteredProducts[index]
+                                                      ['name'],
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  getStoreName(filteredProducts[index]['storeId']),
+                                                  style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  '\$${filteredProducts[index]['price']}',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge,
+                                                ),
+                                                SizedBox(
+                                                  height: MediaQuery.of(context)
+                                                          .size
+                                                          .height *
+                                                      .1,
+                                                )
+                                              ],
+                                            ),
+                                          );
+                                        }),
+                                  )
+                                : Center(
+                                    child: Text('No art to display'),
+                                  );
+                  }),
             ),
           ),
         ],

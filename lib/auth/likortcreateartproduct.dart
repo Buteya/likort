@@ -402,7 +402,7 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
                       height: 400,
                     ),
               SizedBox(
-                height: MediaQuery.of(context).size.height,
+                height: MediaQuery.sizeOf(context).height *.6,
                 child: GridView.builder(
                   itemCount: _images.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -421,12 +421,15 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
                   },
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  // _submitForm();
-                  buildProduct(_nameController.text, _descriptionController.text,_priceController.text, _typeOfArtController.text, _quantityController.text, _imagesImages);
-                },
-                child: const Text('create art'),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0,bottom: 20),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // _submitForm();
+                    buildProduct(_nameController.text, _descriptionController.text,_priceController.text, _typeOfArtController.text, _quantityController.text, _imagesImages);
+                  },
+                  child: const Text('create art'),
+                ),
               ),
             ],
           ),
