@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -19,40 +21,152 @@ class LikortProductDetailScreen extends StatefulWidget {
 class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   int _selectedImageIndex = 0;
   int _quantity = 1;
-  String getStoreName(String storeId) {
-    // Find the store with the matching storeId
-    final store = Provider.of<Store>(context, listen: false).stores.firstWhere(
-          (store) => store.id == storeId,
-      orElse: () => Store(
-          userId: '',
-          created: DateTime.now(),
-          imageUrl: [],
-          reviews: [],
-          id: '',
-          name: '',
-          description: '',
-          products: [],
-          notifications: [],
-          orders: []), // Handle case where store is not found
-    );
+  List<Map<String,dynamic>> stores = [];
+  List<Map<String,dynamic>> products = [];
+  List<Map<String,dynamic>> favorites = [];
+  bool _isLoading = false;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    loadStoreData();
+    loadProductData();
+    loadFavoriteData();
+    super.initState();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchFavoriteData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('favorites').get();
+      List<Map<String, dynamic>> items = [];
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        items.add(doc.data() as Map<String, dynamic>);
+      }
+      print(items);
+      return items;
+    } catch (e) {
+      print("Error fetching data: $e");
+      return []; //Return an empty list in case of error
+    }
+  }
+
+  Future<void> loadFavoriteData() async{
+    try {
+      final userData =  await fetchFavoriteData();
+      if (userData != null) {
+        setState(() {
+          favorites = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchProductData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('products').get();
+      List<Map<String, dynamic>> items = [];
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        items.add(doc.data() as Map<String, dynamic>);
+      }
+      print(items);
+      return items;
+    } catch (e) {
+      print("Error fetching data: $e");
+      return []; //Return an empty list in case of error
+    }
+  }
+
+
+  Future<List<Map<String, dynamic>>> fetchStoreData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('stores').get();
+      List<Map<String, dynamic>> items = [];
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        items.add(doc.data() as Map<String, dynamic>);
+      }
+      print(items);
+      return items;
+    } catch (e) {
+      print("Error fetching data: $e");
+      return []; //Return an empty list in case of error
+    }
+  }
+
+  Future<void> loadProductData() async{
+    try {
+      final userData =  await fetchProductData();
+      if (userData != null) {
+        setState(() {
+          products = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> loadStoreData() async{
+    try {
+      final userData =  await fetchStoreData();
+      if (userData != null) {
+        setState(() {
+          stores = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
+  String getStoreName(String storeId)  {
+    final store = stores.firstWhere(
+          (store) => store['id'] == storeId,
+      orElse: () => {}, // Handle case where store is not found
+    );
     // Return the store name if found, otherwise return an empty string or a default value
     return store != null
-        ? store.name
+        ? store['name']
         : ''; // Or a default value like 'Unknown Store'
   }
 
   @override
   Widget build(BuildContext context) {
     final index = ModalRoute.of(context)!.settings.arguments as int;
-    final products = Provider.of<Product>(context,listen:false).products;
-    final favorites = Provider.of<Favorites>(
-      context,
-      listen: false,
-    );
 
-
-    return Scaffold(
+    return _isLoading ?Scaffold(body: Center(child: CircularProgressIndicator(),),):Scaffold(
       appBar: AppBar(
         leading: InkWell(
             onTap: () {
@@ -71,10 +185,32 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15.0),
                 child: Image.network(
-                  products[index].imageUrls[_selectedImageIndex],
+                  products[index]['imageUrls'][_selectedImageIndex],
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height / 2.4,
                   fit: BoxFit.cover,
+                  loadingBuilder: (BuildContext context, Widget child,
+                      ImageChunkEvent? loadingProgress) {
+                    if (loadingProgress == null) {
+                      // Image has finished loading
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      });
+                      return child;
+                    } else {
+                      // Image is still loading
+                      return const SizedBox.shrink(); // Return an empty widget while loading
+                    }
+                  },
+                  errorBuilder: (BuildContext context, Object error,
+                      StackTrace? stackTrace) {
+                    // Handle image loading errors here
+                    return const Icon(Icons.error); // Show an error icon
+                  },
                 ),
               ),
             ),
@@ -92,7 +228,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       shrinkWrap: true,
-                      itemCount: products[index].imageUrls.length,
+                      itemCount: products[index]['imageUrls'].length,
                       itemBuilder: (context, imageIndex) {
                         return InkWell(
                           onTap: () {
@@ -105,7 +241,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(15.0),
                                 child: Image.network(
-                                  products[index].imageUrls[imageIndex],
+                                  products[index]['imageUrls'][imageIndex],
                                   width: MediaQuery.of(context).size.width * .2,
                                   height:  MediaQuery.of(context).size.height * .15,
                                   fit: BoxFit.cover,
@@ -131,58 +267,24 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               children: [
                 InkWell(
                   onTap: () {
-                    // product
-                    //     // .toggleFavorite(product.products[0].id);
                     setState(() {
-                      final favoriteProducts =
-                      Provider.of<Favorites>(
-                        context,listen: false,)
-                          .favorites
-                          .expand((fav) => fav
-                          .favoriteProducts)
-                          .toList();
-                      final productIndex =
-                      favoriteProducts.indexWhere(
-                              (prod) =>
-                          prod.id ==
-                              products[index].id);
-                      if (!favoriteProducts
+                      if (!favorites
                           .contains(products[index])) {
-                        favoriteProducts.add(products[index]);
-                        favorites.add(Favorites(
-                          id: const Uuid().v4(),
-                          userId: Provider.of<User>(
-                              context,
-                              listen: false)
-                              .users
-                              .last
-                              .id,
-                          favoriteProducts:
-                          favoriteProducts,
-                        ));
-                      }else if(favoriteProducts.contains(products[index])){
+                      }else if(favorites.contains(products[index])){
                         setState(() {
-                          Provider.of<Favorites>(
-                            context,listen: false,)
-                              .favorites
-                              .expand((fav) => fav
-                              .favoriteProducts)
-                              .toList().removeAt(productIndex);
-                          favorites.removeFavorite(productIndex);
-
                         });
                       }
                     });
                   },
-                  child: favorites.favorites.any(
-                          (fav) => fav
-                          .favoriteProducts
+                  child: favorites.any(
+                          (fav) =>
+                          favorites
                           .contains(products[index]))
                       ? Icon(
                     Icons.favorite_rounded,
-                    color:  favorites.favorites.any(
-                            (fav) => fav
-                            .favoriteProducts
+                    color:  favorites.any(
+                            (fav) =>
+                            favorites
                             .contains(products[index]))
                         ? Colors.red
                         : Colors.grey,
@@ -190,9 +292,9 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                       : Icon(
                     Icons
                         .favorite_border_rounded,
-                    color:  favorites.favorites.any(
-                            (fav) => fav
-                            .favoriteProducts
+                    color:  favorites.any(
+                            (fav) =>
+                            favorites
                             .contains(products[index]))
                         ? Colors.red
                         : Colors.grey,
@@ -203,10 +305,10 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                 )
               ],
             ),
-             Text(products[index].name),
-             Text(products[index].typeOfArt),
+             Text(products[index]['name']),
+             Text(products[index]['typeOfArt']),
             Text(
-              getStoreName(products[index].storeId),
+              getStoreName(products[index]['storeId']),
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -216,7 +318,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               child: SizedBox(
                 width: 200,
                 child: Text(
-                  products[index].description,
+                  products[index]['description'],
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontWeight: FontWeight.w400),
                 ),
@@ -226,7 +328,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
               height: MediaQuery.of(context).size.height * .03,
             ),
             Text(
-              '\$${products[index].price}',
+              '\$${products[index]['price']}',
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -281,7 +383,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                         var cartItems = Provider.of<CartItem>(context,listen:false);
                         var id = const Uuid().v4();
                         if(_quantity >= 1){
-                          cartItems.add(CartItem(id: id,userId: Provider.of<User>(context,listen:false).users.last.id, product: products[index],quantity: _quantity,),);
+                          // cartItems.add(CartItem(id: id,userId: Provider.of<User>(context,listen:false).users.last.id, product: products[index],quantity: _quantity,),);
                         }
                        for(var item in cartItems.cartItems){
                          print(item.id);

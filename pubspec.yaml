@@ -57,6 +57,8 @@ dependencies:
   cloud_firestore: ^5.6.3
   flutter_inappwebview: ^6.1.5
   firebase_storage: ^12.4.2
+  placehold_img: ^0.0.4
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

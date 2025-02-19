@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -29,6 +30,7 @@ class LikortHomeScreen extends StatefulWidget {
 }
 
 class _LikortHomeScreenState extends State<LikortHomeScreen> {
+  var uuid = const Uuid();
   bool _isLoading = false;
   RangeValues currentRangeValues =  const RangeValues(0, 100);
   final _searchController = TextEditingController();
@@ -37,9 +39,15 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   String? _selectedCategory; // Initial filter category
   late FocusNode _searchFocusNode;
   List<Map<String, dynamic>> filteredProducts = [];
-  // List<Map<String, dynamic>> _categorySearch = [];
-  Set<dynamic> get categories =>
-      filteredProducts.map((product) => product['typeOfArt']).toSet();
+  List<Map<String, dynamic>> favoriteProducts = [];
+  Set<dynamic> get categories {
+    if(filteredProducts.isNotEmpty){
+      return filteredProducts.map((product) => product['typeOfArt']).toSet();
+    }else{
+      return Set();
+    }
+  }
+
   final CollectionReference _itemsCollection = FirebaseFirestore.instance
       .collection('products'); //Change myCollection to your collection name
   String storeName = '';
@@ -51,20 +59,30 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     _loadUserData();
     loadStoreData();
     _scrollController.addListener(_scrollListener);
-    Provider.of<Product>(context, listen: false)
-        .favoriteProducts; // Load favorites on initialization
+  _loadFavoriteData();
   }
 
   void _filterProducts(String query) {
-    final List<Map<String, dynamic>> filtered =
+    try{
+      final List<Map<String, dynamic>> filtered =
+      filteredProducts.isNotEmpty?
         filteredProducts.where((product) {
-      final productNameLower = product['name'].toLowerCase();
-      final queryLower = query.toLowerCase();
-      return productNameLower.contains(queryLower);
-    }).toList();
-    setState(() {
-      filteredProducts = filtered;
-    });
+          final productNameLower = product['name'].toLowerCase();
+          final queryLower = query.toLowerCase();
+          return productNameLower.contains(queryLower);
+        }).toList():[];
+
+      if(filtered.isNotEmpty){
+        setState(() {
+          filteredProducts = filtered;
+        });
+      }
+    } catch (e){
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+    }
+
   }
 
   @override
@@ -73,14 +91,174 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     _scrollController.dispose();
     super.dispose();
   }
+  Future<void> deleteDocumentByFieldValue(
+      String collectionName, String fieldName, dynamic fieldValue, String userId) async {
+    try {
+      // 1. Get a reference to the Firestore collection.
+      CollectionReference collection =
+      FirebaseFirestore.instance.collection(collectionName);
 
-  void _applyFilters() {
+      // 2. Create a query to find the document with thespecific field value.
+      Query query = collection.where(fieldName, isEqualTo: fieldValue);
+
+      // 3. Get the documents that match the query.
+      QuerySnapshot querySnapshot = await query.get();
+
+      // 4. Check if any documents were found.
+      if (querySnapshot.docs.isNotEmpty) {
+        // 5. Find the document with the matching userId.
+        DocumentSnapshot? documentToDelete;
+        for (DocumentSnapshot doc in querySnapshot.docs) {
+          if (doc.id == userId) {
+            documentToDelete = doc;
+            break; // Exit the loop once the document is found.
+          }
+        }
+
+        // 6. Check if a document with the matching userId was found.
+        if (documentToDelete != null) {
+          // 7. Delete the document.
+          await documentToDelete.reference.delete();
+          print(
+              'Document with $fieldName: $fieldValue and ID: $userId deleted successfully.');
+        } else {
+          print(
+              'No document found with $fieldName: $fieldValue and ID: $userId.');
+        }
+      } else {
+        print('No document found with $fieldName: $fieldValue.');
+      }
+    } catch (e) {
+      print('Error deleting document: $e');
+      // Handle the error appropriately (e.g., show an error message to the user).
+    }
+  }
+
+  Future<void> createFavorite(
+      Map products) async {
+    final id = uuid.v4();
+    final listProducts = [];
+    try {
+      // 1. Create the user with email and password
+      var userId = FirebaseAuth.instance.currentUser?.uid;
+
+      // 2. Check if the user is created
+      if (userId == null) {
+        if (kDebugMode) {
+          print('user not found');
+        }
+        return null;
+      }
+
+
+        listProducts.add(products);
+
+      // 3. Get the user ID
+      print(userId);
+      // 4. Create the user data map
+      Map<String, dynamic> favoriteData = {
+        'id': id,
+        'userId': userId,
+        'favoriteProducts': listProducts,
+        'created': FieldValue.serverTimestamp(), // Use server timestamp
+      };
+
+      for(final favorite in favoriteData.values){
+        print(favorite);
+      }
+      // 5. Save the user data to Firestore
+      CollectionReference usersCollection =
+      FirebaseFirestore.instance.collection('favorites');
+      await usersCollection.doc(userId).set(favoriteData).then((_) {
+        if (kDebugMode) {
+          print('User data saved successfully!');
+
+        }
+      }).catchError((error) {
+        if (kDebugMode) {
+          print('Error saving user data: $error');
+        }
+        throw Exception('Failed to save user data: $error');
+      });
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('Unexpected Error: $e');
+      }
+    }
+  }
+
+
+
+  String _findNewestCategory(List<Map<String, dynamic>> products) {
+    if (products.isEmpty) {
+      return ''; // Return empty string if no products
+    }
+
+    Map<String, dynamic> categoryLatestDate = {};
+    for (var product in products) {
+      String category = product['typeOfArt'];
+      dynamic dateAdded = product['lastUpdated'];
+      if (!categoryLatestDate.containsKey(category) || dateAdded.isAfter(categoryLatestDate[category]!)) {
+        categoryLatestDate[category] = dateAdded;
+      }
+    }
+
+    String newestCategory = '';
+    dynamic latestDate = DateTime(0); // Start with a very old date
+    categoryLatestDate.forEach((category, date) {
+      if (date.isAfter(latestDate)) {
+        latestDate = date;
+        newestCategory = category;
+      }
+    });
+
+    return newestCategory;
+  }
+
+  String _findMostFrequentCategory(List<Map<String, dynamic>> products) {
+    if (products.isEmpty) {
+      return ''; // Return empty string if noproducts
+    }
+
+    Map<String, int> categoryCounts = {};
+    for (var product in products) {
+      String category = product['typeOfArt'];
+      categoryCounts[category] = (categoryCounts[category] ?? 0) + 1;
+    }
+
+    String mostFrequentCategory = '';
+    int maxCount = 0;
+    categoryCounts.forEach((category, count) {
+      if (count > maxCount) {
+        maxCount = count;
+        mostFrequentCategory = category;
+      }
+    });
+
+    return mostFrequentCategory;
+  }
+
+  void _applyFilters(String category) {
     setState(() {
       if (_selectedCategory == 'All') {
         filteredProducts = filteredProducts;
-      } else {
+      } else if(category == 'Paintings'  && filteredProducts.any((item)=>item['typeOfArt']==category)){
         filteredProducts = filteredProducts.where((item) {
-          return item['typeOfArt'] == _selectedCategory;
+          return item['typeOfArt'] == category;
+        }).toList();
+      } else if(category == 'Decor' && filteredProducts.any((item)=>item['typeOfArt']==category)){
+        filteredProducts = filteredProducts.where((item) {
+          return item['typeOfArt'] == category;
+        }).toList();
+      } else if(category == 'Popular' ){
+        filteredProducts = filteredProducts.where((item) {
+          return item['typeOfArt'] == _findMostFrequentCategory(filteredProducts);
+        }).toList();
+      }
+      else if(category == 'New' ){
+        filteredProducts = filteredProducts.where((item) {
+          return item['typeOfArt'] == _findNewestCategory(filteredProducts);
         }).toList();
       }
     });
@@ -167,6 +345,44 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
       });
     }
   }
+  Future<void> _loadFavoriteData() async {
+    try {
+      final userData = await fetchData();
+      if (userData != null) {
+        setState(() {
+          favoriteProducts = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
+  Future<List<Map<String, dynamic>>> fetchFavoriteData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('favorites').get();
+      List<Map<String, dynamic>> items = [];
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        items.add(doc.data() as Map<String, dynamic>);
+      }
+      print(items);
+      return items;
+    } catch (e) {
+      print("Error fetching data: $e");
+      return []; //Return an empty list in case of error
+    }
+  }
 
   Future<List<Map<String, dynamic>>> fetchStoreData() async {
     try {
@@ -204,7 +420,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     var screenSize = MediaQuery.of(context).size;
     // Get the screen orientation
     // var orientation = MediaQuery.of(context).orientation;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final platformBrightness = MediaQuery.of(context).platformBrightness;
+    final bool isDark = platformBrightness == Brightness.dark;
     // final product = Provider.of<Product>(context, listen: false);
     final String appTitle = widget.title;
     final ThemeMode appThemeMode = widget.themeMode;
@@ -215,9 +432,9 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
       context,
       listen: false,
     );
-    _selectedCategory = categories.first;
+    // _selectedCategory = categories.first;
 
-    return Scaffold(
+    return _isLoading?Scaffold(body:Center(child: CircularProgressIndicator(),),):Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(
@@ -317,7 +534,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                   width: double.infinity,
                                                   child: DropdownButton<String>(
                                                     isExpanded: true,
-                                                    value: _selectedCategory,
+                                                    value: _selectedCategory = categories.first,
                                                     items: categories
                                                         .map(
                                                           (category) =>
@@ -376,14 +593,18 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('new'),
+                    onPressed: () {
+                    _applyFilters('New');
+                    },
+                    child: const Text('New'),
                   ),
                   const SizedBox(
                     width: 10,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _applyFilters('Popular');
+                    },
                     child: const Text('Popular'),
                   ),
                   const SizedBox(
@@ -391,6 +612,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      _applyFilters('Paintings');
                       setState(() {
                         // _filteredItems = searchProductsByType(allProducts, text).cast<String>();
                       });
@@ -401,7 +623,9 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                     width: 10,
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _applyFilters('Decor');
+                    },
                     child: const Text('Decor'),
                   ),
                   const SizedBox(
@@ -461,131 +685,106 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           15.0),
-                                                  child: Image.network(
-                                                    filteredProducts[index]
-                                                        ['imageUrls'][0],
-                                                    width:
-                                                        screenSize.width * .83,
-                                                    height: screenSize.height /
-                                                        2.66,
-                                                    fit: BoxFit.cover,
+
+                                                  child:
+                                                    FadeInImage(
+                                                      placeholder:  const AssetImage('assets/placeholder.png'), // Replace with your placeholder image asset
+                                                      image: NetworkImage(filteredProducts[index]['imageUrls'][0]),
+                                                      width: screenSize.width * .83,
+                                                      height: screenSize.height / 2.66,
+                                                      fit: BoxFit.cover,
+                                                      imageErrorBuilder: (context, error, stackTrace) {
+                                                        return Center(
+                                                          child: Icon(
+                                                            Icons.error_outline,
+                                                            size: screenSize.width * 0.2, // Adjust size as needed
+                                                            color: Colors.red,
+                                                          ),
+                                                        );
+                                                      },
+                                                      placeholderErrorBuilder: (context, error, stackTrace) {
+                                                        return Center(
+                                                          child: Icon(
+                                                            Icons.image,
+                                                            size: screenSize.width * 0.2, // Adjust size as needed
+                                                            color: Colors.grey,
+                                                          ),
+                                                        );
+                                                      },
                                                   ),
                                                 ),
-                                                // Row(
-                                                //   mainAxisAlignment:
-                                                //       MainAxisAlignment.end,
-                                                //   children: [
-                                                //     Padding(
-                                                //       padding:
-                                                //           const EdgeInsets
-                                                //               .only(top: 8.0),
-                                                //       child: InkWell(
-                                                //         onTap: () {
-                                                //           // product
-                                                //           //     // .toggleFavorite(product.products[0].id);
-                                                //           setState(() {
-                                                //             final favoriteProducts =
-                                                //                 Provider.of<
-                                                //                         Favorites>(
-                                                //               context,
-                                                //               listen: false,
-                                                //             )
-                                                //                     .favorites
-                                                //                     .expand((fav) =>
-                                                //                         fav.favoriteProducts)
-                                                //                     .toList();
-                                                //             final productIndex =
-                                                //                 favoriteProducts
-                                                //                     .indexWhere((prod) =>
-                                                //                         prod.id ==
-                                                //                         product
-                                                //                             .id);
-                                                //             if (!favoriteProducts
-                                                //                 .contains(
-                                                //                     product)) {
-                                                //               favoriteProducts
-                                                //                   .add(
-                                                //                       product);
-                                                //               favorites.add(
-                                                //                   Favorites(
-                                                //                 id: const Uuid()
-                                                //                     .v4(),
-                                                //                 userId: Provider.of<
-                                                //                             userLikort
-                                                //                             .User>(
-                                                //                         context,
-                                                //                         listen:
-                                                //                             false)
-                                                //                     .users
-                                                //                     .last
-                                                //                     .id,
-                                                //                 favoriteProducts:
-                                                //                     favoriteProducts,
-                                                //               ));
-                                                //             } else if (favoriteProducts
-                                                //                 .contains(
-                                                //                     product)) {
-                                                //               setState(() {
-                                                //                 Provider.of<
-                                                //                         Favorites>(
-                                                //                   context,
-                                                //                   listen:
-                                                //                       false,
-                                                //                 )
-                                                //                     .favorites
-                                                //                     .expand((fav) => fav
-                                                //                         .favoriteProducts)
-                                                //                     .toList()
-                                                //                     .removeAt(
-                                                //                         productIndex);
-                                                //                 favorites
-                                                //                     .removeFavorite(
-                                                //                         productIndex);
-                                                //               });
-                                                //             }
-                                                //           });
-                                                //         },
-                                                //         child: favorites
-                                                //                 .favorites
-                                                //                 .any((fav) => fav
-                                                //                     .favoriteProducts
-                                                //                     .contains(
-                                                //                         product))
-                                                //             ? Icon(
-                                                //                 Icons
-                                                //                     .favorite_rounded,
-                                                //                 color: favorites.favorites.any((fav) => fav
-                                                //                         .favoriteProducts
-                                                //                         .contains(
-                                                //                             product))
-                                                //                     ? Colors
-                                                //                         .red
-                                                //                     : Colors
-                                                //                         .grey,
-                                                //               )
-                                                //             : Icon(
-                                                //                 Icons
-                                                //                     .favorite_border_rounded,
-                                                //                 color: favorites.favorites.any((fav) => fav
-                                                //                         .favoriteProducts
-                                                //                         .contains(
-                                                //                             product))
-                                                //                     ? Colors
-                                                //                         .red
-                                                //                     : Colors
-                                                //                         .grey,
-                                                //               ),
-                                                //       ),
-                                                //     ),
-                                                //     SizedBox(
-                                                //       width: MediaQuery.of(
-                                                //                   context)
-                                                //               .size
-                                                //               .width *
-                                                //           .1,
-                                                //     )
-                                                //   ],
-                                                // ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .only(top: 8.0),
+                                                      child: InkWell(
+                                                        onTap: () {
+                                                          setState(() {
+
+                                                            if (!favoriteProducts
+                                                                .any((item){
+                                                              return item['id'] == snapshot.data![index]['id'];
+                                                            }
+                                                            )) {
+                                                              //add favorites
+                                                              createFavorite(snapshot.data![index]);
+                                                            } else if (favoriteProducts
+                                                                .any((item){
+                                                              return item['id'] == snapshot.data![index]['id'];
+                                                            }
+                                                            )) {
+                                                              //remove favorite
+                                                              favoriteProducts.remove(snapshot.data![index]);
+                                                              deleteDocumentByFieldValue('favorites', 'id', snapshot.data![index]['id'],FirebaseAuth.instance.currentUser!.uid);
+                                                            }
+                                                          });
+                                                        },
+                                                        child:favoriteProducts
+                                                            .any((item){
+                                                          return item['id'] == snapshot.data![index]['id'];
+                                                        }
+                                                        )
+                                                            ? Icon(
+                                                                Icons
+                                                                    .favorite_rounded,
+                                                                color: favoriteProducts
+                                                                        .any((item){
+                                                                        return item['id'] == snapshot.data![index]['id'];
+                                                                }
+                                                                            )
+                                                                    ? Colors
+                                                                        .red
+                                                                    : Colors
+                                                                        .grey,
+                                                              )
+                                                            : Icon(
+                                                                Icons
+                                                                    .favorite_border_rounded,
+                                                                color: favoriteProducts
+                                                                    .any((item){
+                                                                  return item['id'] == snapshot.data![index]['id'];
+                                                                }
+                                                                )
+                                                                    ? Colors
+                                                                        .red
+                                                                    : Colors
+                                                                        .grey,
+                                                              ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: MediaQuery.of(
+                                                                  context)
+                                                              .size
+                                                              .width *
+                                                          .1,
+                                                    )
+                                                  ],
+                                                ),
                                                 Text(
                                                   filteredProducts[index]
                                                       ['name'],
