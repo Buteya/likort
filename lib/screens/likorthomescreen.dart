@@ -420,7 +420,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     var screenSize = MediaQuery.of(context).size;
     // Get the screen orientation
     // var orientation = MediaQuery.of(context).orientation;
-    final platformBrightness = MediaQuery.of(context).platformBrightness;
+    final platformBrightness = Theme.of(context).brightness;
     final bool isDark = platformBrightness == Brightness.dark;
     // final product = Provider.of<Product>(context, listen: false);
     final String appTitle = widget.title;
