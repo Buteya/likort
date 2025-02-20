@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   List<Map<String,dynamic>> products = [];
   List<Map<String,dynamic>> favorites = [];
   bool _isLoading = false;
+  var uuid = const Uuid();
 
   @override
   void initState() {
@@ -33,6 +35,65 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
     loadProductData();
     loadFavoriteData();
     super.initState();
+  }
+
+  Future<void> createCartItem(
+      Map product) async {
+    final id = uuid.v4();
+    final listProducts = [];
+    try {
+      // 1. Create the user with email and password
+      var userId = FirebaseAuth.instance.currentUser?.uid;
+
+      // 2. Check if the user is created
+      if (userId == null) {
+        if (kDebugMode) {
+          print('user not found');
+        }
+        return null;
+      }
+
+
+      listProducts.add(product);
+
+      // 3. Get the user ID
+      print(userId);
+      // 4. Create the user data map
+      Map<String, dynamic> cartItemData = {
+        'id': id,
+        'userId': userId,
+        'product':product,
+        'quantity':_quantity,
+        'created': FieldValue.serverTimestamp(), // Use server timestamp
+      };
+      //
+      // for(final cartItem in cartItemData.values){
+      //   print(cartItem);
+      // }
+      // 5. Save the user data to Firestore
+      CollectionReference usersCollection =
+      FirebaseFirestore.instance.collection('cartitems');
+      var document = await usersCollection.doc(userId).get();
+      var data = document.data()as Map<String,dynamic>;
+      if(!data.containsValue(id)){
+        await usersCollection.doc(userId).set(cartItemData).then((_) {
+          if (kDebugMode) {
+            print('Cartitems data saved successfully!');
+
+          }
+        }).catchError((error) {
+          if (kDebugMode) {
+            print('Error saving cartitems data: $error');
+          }
+          throw Exception('Failed to save cartitems data: $error');
+        });
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('Unexpected Error: $e');
+      }
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchFavoriteData() async {
@@ -373,6 +434,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                     ),
                   ),
                   ElevatedButton(onPressed: () {
+
                     Navigator.of(context).pushReplacementNamed('/likorthomescreen');
                   },
                     style: ElevatedButton.styleFrom(
@@ -383,6 +445,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                         var cartItems = Provider.of<CartItem>(context,listen:false);
                         var id = const Uuid().v4();
                         if(_quantity >= 1){
+                          createCartItem(products[index]);
                           // cartItems.add(CartItem(id: id,userId: Provider.of<User>(context,listen:false).users.last.id, product: products[index],quantity: _quantity,),);
                         }
                        for(var item in cartItems.cartItems){
