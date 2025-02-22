@@ -661,6 +661,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                         controller: _scrollController,
                                         gridDelegate:
                                             const SliverGridDelegateWithFixedCrossAxisCount(
+                                              childAspectRatio: 0.39,
                                           crossAxisCount:
                                               2, // Number of items per row
                                           crossAxisSpacing:
@@ -671,149 +672,156 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                         itemCount: filteredProducts.length,
                                         itemBuilder: (context, index) {
                                           return InkWell(
-                                            onTap: () {
-                                              Navigator.of(context).pushNamed(
-                                                  '/likortproductdetail',
-                                                  arguments: index);
-                                            },
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          15.0),
-
-                                                  child:
-                                                    FadeInImage(
-                                                      placeholder:  const AssetImage('assets/placeholder.png'), // Replace with your placeholder image asset
-                                                      image: NetworkImage(filteredProducts[index]['imageUrls'][0]),
-                                                      width: screenSize.width * .83,
-                                                      height: screenSize.height / 2.66,
-                                                      fit: BoxFit.cover,
-                                                      imageErrorBuilder: (context, error, stackTrace) {
-                                                        return Center(
-                                                          child: Icon(
-                                                            Icons.error_outline,
-                                                            size: screenSize.width * 0.2, // Adjust size as needed
-                                                            color: Colors.red,
-                                                          ),
-                                                        );
-                                                      },
-                                                      placeholderErrorBuilder: (context, error, stackTrace) {
-                                                        return Center(
-                                                          child: Icon(
-                                                            Icons.image,
-                                                            size: screenSize.width * 0.2, // Adjust size as needed
-                                                            color: Colors.grey,
-                                                          ),
-                                                        );
-                                                      },
-                                                  ),
-                                                ),
-                                                Row(
+                                              onTap: () {
+                                                Navigator.of(context).pushNamed(
+                                                    '/likortproductdetail',
+                                                    arguments: index);
+                                              },
+                                                child: Column(
                                                   mainAxisAlignment:
-                                                      MainAxisAlignment.end,
+                                                      MainAxisAlignment.center,
+                                                  mainAxisSize: MainAxisSize.max,
                                                   children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets
-                                                              .only(top: 8.0),
-                                                      child: InkWell(
-                                                        onTap: () {
-                                                          setState(() {
+                                                    ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                15.0),
 
-                                                            if (!favoriteProducts
-                                                                .any((item){
-                                                              return item['id'] == snapshot.data![index]['id'];
-                                                            }
-                                                            )) {
-                                                              //add favorites
-                                                              createFavorite(snapshot.data![index]);
-                                                            } else if (favoriteProducts
-                                                                .any((item){
-                                                              return item['id'] == snapshot.data![index]['id'];
-                                                            }
-                                                            )) {
-                                                              //remove favorite
-                                                              favoriteProducts.remove(snapshot.data![index]);
-                                                              deleteDocumentByFieldValue('favorites', 'id', snapshot.data![index]['id'],FirebaseAuth.instance.currentUser!.uid);
-                                                            }
-                                                          });
-                                                        },
-                                                        child:favoriteProducts
-                                                            .any((item){
-                                                          return item['id'] == snapshot.data![index]['id'];
-                                                        }
-                                                        )
-                                                            ? Icon(
-                                                                Icons
-                                                                    .favorite_rounded,
-                                                                color: favoriteProducts
-                                                                        .any((item){
-                                                                        return item['id'] == snapshot.data![index]['id'];
-                                                                }
-                                                                            )
-                                                                    ? Colors
-                                                                        .red
-                                                                    : Colors
-                                                                        .grey,
-                                                              )
-                                                            : Icon(
-                                                                Icons
-                                                                    .favorite_border_rounded,
-                                                                color: favoriteProducts
-                                                                    .any((item){
-                                                                  return item['id'] == snapshot.data![index]['id'];
-                                                                }
-                                                                )
-                                                                    ? Colors
-                                                                        .red
-                                                                    : Colors
-                                                                        .grey,
-                                                              ),
+                                                        child:
+                                                          FadeInImage(
+                                                            placeholder:  const AssetImage('assets/placeholder.png'), // Replace with your placeholder image asset
+                                                            image: NetworkImage(filteredProducts[index]['imageUrls'][0]),
+                                                            width: screenSize.width * .83,
+                                                            height: screenSize.height / 2.66,
+                                                            fit: BoxFit.cover,
+                                                            imageErrorBuilder: (context, error, stackTrace) {
+                                                              return Center(
+                                                                child: Icon(
+                                                                  Icons.error_outline,
+                                                                  size: screenSize.width * 0.2, // Adjust size as needed
+                                                                  color: Colors.red,
+                                                                ),
+                                                              );
+                                                            },
+                                                            placeholderErrorBuilder: (context, error, stackTrace) {
+                                                              return Center(
+                                                                child: Icon(
+                                                                  Icons.image,
+                                                                  size: screenSize.width * 0.2, // Adjust size as needed
+                                                                  color: Colors.grey,
+                                                                ),
+                                                              );
+                                                            },
+                                                        ),
                                                       ),
-                                                    ),
+
+                                                    Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment.end,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(top: 8.0),
+                                                            child: InkWell(
+                                                              onTap: () {
+                                                                setState(() {
+
+                                                                  if (!favoriteProducts
+                                                                      .any((item){
+                                                                    return item['id'] == snapshot.data![index]['id'];
+                                                                  }
+                                                                  )) {
+                                                                    //add favorites
+                                                                    createFavorite(snapshot.data![index]);
+                                                                  } else if (favoriteProducts
+                                                                      .any((item){
+                                                                    return item['id'] == snapshot.data![index]['id'];
+                                                                  }
+                                                                  )) {
+                                                                    //remove favorite
+                                                                    favoriteProducts.remove(snapshot.data![index]);
+                                                                    deleteDocumentByFieldValue('favorites', 'id', snapshot.data![index]['id'],FirebaseAuth.instance.currentUser!.uid);
+                                                                  }
+                                                                });
+                                                              },
+                                                              child:favoriteProducts
+                                                                  .any((item){
+                                                                return item['id'] == snapshot.data![index]['id'];
+                                                              }
+                                                              )
+                                                                  ? Icon(
+                                                                      Icons
+                                                                          .favorite_rounded,
+                                                                      color: favoriteProducts
+                                                                              .any((item){
+                                                                              return item['id'] == snapshot.data![index]['id'];
+                                                                      }
+                                                                                  )
+                                                                          ? Colors
+                                                                              .red
+                                                                          : Colors
+                                                                              .grey,
+                                                                    )
+                                                                  : Icon(
+                                                                      Icons
+                                                                          .favorite_border_rounded,
+                                                                      color: favoriteProducts
+                                                                          .any((item){
+                                                                        return item['id'] == snapshot.data![index]['id'];
+                                                                      }
+                                                                      )
+                                                                          ? Colors
+                                                                              .red
+                                                                          : Colors
+                                                                              .grey,
+                                                                    ),
+                                                            ),
+                                                          ),
+                                                          SizedBox(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                .1,
+                                                          )
+                                                        ],
+                                                      ),
+
+                                                   Text(
+                                                        filteredProducts[index]
+                                                            ['name'],
+                                                        style: const TextStyle(
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+
+                                                    Text(
+                                                        getStoreName(filteredProducts[index]['storeId']),
+                                                        style: const TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight.bold),
+                                                      ),
+
+                                                    Text(
+                                                        '\$${filteredProducts[index]['price']}',
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodyLarge,
+                                                      ),
+
                                                     SizedBox(
-                                                      width: MediaQuery.of(
-                                                                  context)
+                                                      height: MediaQuery.of(context)
                                                               .size
-                                                              .width *
+                                                              .height *
                                                           .1,
                                                     )
                                                   ],
                                                 ),
-                                                Text(
-                                                  filteredProducts[index]
-                                                      ['name'],
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  getStoreName(filteredProducts[index]['storeId']),
-                                                  style: const TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  '\$${filteredProducts[index]['price']}',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyLarge,
-                                                ),
-                                                SizedBox(
-                                                  height: MediaQuery.of(context)
-                                                          .size
-                                                          .height *
-                                                      .1,
-                                                )
-                                              ],
-                                            ),
-                                          );
+
+                                            )
+                                          ;
                                         }),
                                   )
                                 : Center(
