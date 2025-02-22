@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -29,11 +31,212 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
   bool _isDateSelected = true;
   bool _isCurrentAddress = true;
   bool _isDeliveryInstruction = true;
+  List<Map<String, dynamic>> cartItems = [];
+  bool _isLoading = false;
 
   @override
   void initState() {
-    super.initState();
+    loadCartItemData();
     _getCurrentAddress();
+    super.initState();
+  }
+
+
+
+
+  Future<Map<String, dynamic>> getMpesaAccessToken() async {
+    const String consumerKey =
+        'L5dKdxWq9SemWTAkaiXm1V06GlOSnpbQytwiqjsrMO5gxT8q'; // Replace with your actual consumer key
+    const String consumerSecret =
+        'PvoM5NeFGbQTrQvTevun19AVAC3LGFxCD05m1jhnMWBVkFBeTWpB5pr9A2NCHPdn'; // Replace with your actual consumer secret
+    final String basicAuth =
+        'Basic ${base64Encode(utf8.encode('$consumerKey:$consumerSecret'))}';
+
+    print(basicAuth);
+
+    final Map<String, String> headers = {'Authorization': basicAuth,'Content-Type':'application/json',
+    };
+
+
+    const String tokenUrl =
+        'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+
+    try {
+      final http.Response response = await http.get(
+          Uri.parse(tokenUrl),headers: headers);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseJson = json.decode(response.body);
+     ;
+        print(responseJson);
+        return responseJson;
+      } else {
+        print('Error getting M-Pesa access token: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Error getting M-Pesa access token');
+      }
+    } catch (e) {
+      print('Error getting M-Pesa access token: $e');
+      throw Exception('Error getting M-Pesa access token');
+    }
+  }
+
+  // Future<void> initiateMpesaPayment(String number) async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //   final http.Response response = await http.get(
+  //     Uri.parse(
+  //         'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'), // Replace with actual Visa API endpoint
+  //     headers: {
+  //       'Authorization':
+  //       'Basic dGJkandVQnFBNU43R2pDbDc4aUJFNWRWSTcyNGJGdmdtQzhIaWZiQnFtdG1WSEVBOnlIVnFMMFFCODVxT3RlVlJHdnh5MHFtaGtvdmxuN1lyRG9hTzFsd3lZUzd0c3VhUlpDODRQT014Szl5elVQUVo=',
+  //     },
+  //   );
+  //
+  //   print(response.body);
+  //   final Map<String, dynamic> responseData = jsonDecode(response.body);
+  //   print(responseData['access_token']);
+  //   final http.Response payresponse = await http.post(
+  //       Uri.parse(
+  //           'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'), // Replace with actual Visa API endpoint
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": "Bearer ${responseData['access_token']}"
+  //       },
+  //       body: jsonEncode({
+  //         "BusinessShortCode": "174379",
+  //         "Password":
+  //         "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMTYwMjE2MTY1NjI3",
+  //         "Timestamp": "20160216165627",
+  //         "TransactionType": "CustomerPayBillOnline",
+  //         "Amount": 1,
+  //         "PartyA": "254700415452",
+  //         "PartyB": "174379",
+  //         "PhoneNumber": "254700415452",
+  //         "CallBackURL": "https://mydomain.com/pat",
+  //         "AccountReference": "Test",
+  //         "TransactionDesc": "Test"
+  //       }));
+  //   print(payresponse.body);
+  //   if(payresponse.statusCode == 200){
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //
+  //   }else {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
+
+  Future<http.Response> getAccessToken() async {
+    // Define the headers
+    Map<String, String> headers = {
+      "Authorization":
+      "Basic TDVkS2R4V3E5U2VtV1RBa2FpWG0xVjA2R2xPU25wYlF5dHdpcWpzck1PNWd4VDhxOlB2b001TmVGR2JRVHJRdlRldnVuMTlBVkFDM0xHRnhDRDA1bTFqaG5NV0JWa0ZCZVRXcEI1cHI5QTJOQ0hQZG4=",
+    };
+
+    // Make the GET request
+    http.Response response = await http.get(
+      Uri.parse(
+          "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"),
+      headers: headers,
+    );
+
+    // Return the response
+    return response;
+  }
+
+
+  Future<http.Response> initiateMpesaStkPush() async {
+    // http.Response responseA = await getAccessToken();
+    //
+    // if (responseA.statusCode == 200) {
+    //   // Request successful
+    //   print("Access token retrieved successfully!");
+    //   print("Response body: ${responseA.body}");
+    // } else {
+    //   // Request failed
+    //   print("Error retrieving access token: ${responseA.statusCode}");
+    //   print("Response body: ${responseA.body}");
+    // }
+    // Define the request body as a Map
+    Map<String, dynamic> requestBody = {
+      "BusinessShortCode": 174379,
+      "Password":
+      "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMjUwMjIxMTMwNzMw",
+      "Timestamp": "20250221130730",
+      "TransactionType": "CustomerPayBillOnline",
+      "Amount": 1,
+      "PartyA": 254700415452,
+      "PartyB": 174379,
+      "PhoneNumber": 254700415452,
+      "CallBackURL": "https://mydomain.com/path",
+      "AccountReference": "CompanyXLTD",
+      "TransactionDesc": "Payment of X",
+    };
+
+    // Define the headers
+    Map<String, String> headers = {
+      "Authorization": "Bearer AFMglCN8XzlXZxK6eUmgty0BAlwL",
+      "Content-Type":"application/json"
+    };
+
+    // Convert the request body to JSON
+    String jsonBody = json.encode(requestBody);
+
+    // Make the POST request
+    http.Response response = await http.post(
+      Uri.parse("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"),
+      headers: headers,
+      body: jsonBody,
+    );
+    print(response.body);
+
+    // Return the response
+    return response;
+
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCartItemData() async {
+    try {
+      QuerySnapshot querySnapshot =
+      await FirebaseFirestore.instance.collection('cartitems').get();
+      List<Map<String, dynamic>> items = [];
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        items.add(doc.data() as Map<String, dynamic>);
+      }
+      print(items);
+      return items;
+    } catch (e) {
+      print("Error fetching data: $e");
+      return []; //Return an empty list in case of error
+    }
+  }
+
+  Future<void> loadCartItemData() async {
+    try {
+      final userData = await fetchCartItemData();
+      if (userData != null) {
+        setState(() {
+          cartItems = userData;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
@@ -167,52 +370,52 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
     }
   }
 
-  Future<void> initiateMpesaPayment(String number,String totalAmount) async {
-    const consumerKey = 'L5dKdxWq9SemWTAkaiXm1V06GlOSnpbQytwiqjsrMO5gxT8q';
-    const consumerSecret = 'PvoM5NeFGbQTrQvTevun19AVAC3LGFxCD05m1jhnMWBVkFBeTWpB5pr9A2NCHPdn';
-
-    final basicAuth = 'Basic ${base64Encode(utf8.encode('$consumerKey:$consumerSecret'))}';
-
-    final headers = {
-      'Authorization': basicAuth,
-    };
-
-    final http.Response response = await http.get(
-      Uri.parse(
-          'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'), // Replace with actual Visa API endpoint
-      headers: headers,
-    );
-
-    print(response.body);
-    final Map<String, dynamic> responseData = jsonDecode(response.body);
-
-
-    // print(response.body);
-    // final Map<String, dynamic> responseData = jsonDecode(response.body);
-    print(responseData['access_token']);
-    final http.Response payresponse = await http.post(
-        Uri.parse(
-            'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'), // Replace with actual Visa API endpoint
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${responseData['access_token']}"
-        },
-        body: jsonEncode({
-          "BusinessShortCode": "174379",
-          "Password":
-          "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMTYwMjE2MTY1NjI3",
-          "Timestamp": "20160216165627",
-          "TransactionType": "CustomerPayBillOnline",
-          "Amount": totalAmount,
-          "PartyA": "254${number.substring(1)}",
-          "PartyB": "174379",
-          "PhoneNumber": "254${number.substring(1)}",
-          "CallBackURL": "https://mydomain.com/pat",
-          "AccountReference": "Test",
-          "TransactionDesc": "Test"
-        }));
-    print(payresponse.body);
-  }
+  // Future<void> initiateMpesaPayment(String number,String totalAmount) async {
+  //   const consumerKey = 'L5dKdxWq9SemWTAkaiXm1V06GlOSnpbQytwiqjsrMO5gxT8q';
+  //   const consumerSecret = 'PvoM5NeFGbQTrQvTevun19AVAC3LGFxCD05m1jhnMWBVkFBeTWpB5pr9A2NCHPdn';
+  //
+  //   final basicAuth = 'Basic ${base64Encode(utf8.encode('$consumerKey:$consumerSecret'))}';
+  //
+  //   final headers = {
+  //     'Authorization': basicAuth,
+  //   };
+  //
+  //   final http.Response response = await http.get(
+  //     Uri.parse(
+  //         'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'), // Replace with actual Visa API endpoint
+  //     headers: headers,
+  //   );
+  //
+  //   print(response.body);
+  //   final Map<String, dynamic> responseData = jsonDecode(response.body);
+  //
+  //
+  //   // print(response.body);
+  //   // final Map<String, dynamic> responseData = jsonDecode(response.body);
+  //   print(responseData['access_token']);
+  //   final http.Response payresponse = await http.post(
+  //       Uri.parse(
+  //           'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'), // Replace with actual Visa API endpoint
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": "Bearer ${responseData['access_token']}"
+  //       },
+  //       body: jsonEncode({
+  //         "BusinessShortCode": "174379",
+  //         "Password":
+  //         "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJhZGExZWQyYzkxOTIwMTYwMjE2MTY1NjI3",
+  //         "Timestamp": "20160216165627",
+  //         "TransactionType": "CustomerPayBillOnline",
+  //         "Amount": totalAmount,
+  //         "PartyA": "254${number.substring(1)}",
+  //         "PartyB": "174379",
+  //         "PhoneNumber": "254${number.substring(1)}",
+  //         "CallBackURL": "https://mydomain.com/pat",
+  //         "AccountReference": "Test",
+  //         "TransactionDesc": "Test"
+  //       }));
+  //   print(payresponse.body);
+  // }
 
   void _makePayment() async{
     var cartitems = Provider.of<CartItem>(context,listen:false);
@@ -231,7 +434,8 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
       });
     } else {
       if(_selectedPaymentMethod == 'Mpesa'){
-          initiateMpesaPayment(currentUser.phone, cartitems.allCartItemsPrice().toString());
+          // initiateMpesaPayment(currentUser.phone, cartitems.allCartItemsPrice().toString());
+          initiateMpesaStkPush();
       }else if(_selectedPaymentMethod == 'cash'){
         Navigator.of(context).pushReplacementNamed('/likorttrackorder');
       }
@@ -444,37 +648,35 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
             ListView.builder(
                 shrinkWrap: true, // Add this line
                 physics: const NeverScrollableScrollPhysics(), // Add this line
-                itemCount: Provider.of<CartItem>(context, listen: false)
-                    .cartItems
+                itemCount: cartItems
                     .length,
                 itemBuilder: (context, index) {
-                  var cartitems = Provider.of<CartItem>(context).cartItems;
                   return ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(15.0),
                       child: Image.network(
-                        cartitems[index].product.imageUrls[0],
+                        cartItems[index]['product']['imageUrls'][0],
                         width: MediaQuery.of(context).size.width * 0.1,
                         height: MediaQuery.of(context).size.height * 0.1,
                         fit: BoxFit.cover,
                       ),
                     ),
-                    title: Text(cartitems[index].product.name),
+                    title: Text(cartItems[index]['product']['name']),
                     trailing: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('${cartitems[index].quantity}x'),
+                        Text('${cartItems[index]['quantity']}x'),
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.1,
                         ),
                         Text(
-                            '\$${cartitems[index].product.price.toStringAsFixed(2)}'),
+                            '\$${cartItems[index]['product']['price'].toStringAsFixed(2)}'),
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.15,
                         ),
                         Text(
-                            '\$${cartitems[index].getTotalPrice().toStringAsFixed(2)}'),
+                            '\$${(cartItems[index]['product']['price']! * cartItems[index]['quantity']).toStringAsFixed(2)}'),
                       ],
                     ),
                   );
@@ -528,7 +730,10 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
               onPressed: () {
                 // Start payment process
                 // ...
-                _makePayment();
+                // _makePayment();
+                getMpesaAccessToken();
+                // initiateMpesaPayment('');
+                // initiateMpesaStkPush();
                 // fetchAccessToken(context);
 
                 //      Navigator.of(context).pushReplacementNamed('/likortpaymentfailure');

@@ -91,9 +91,11 @@ class _LikortSignupState extends State<LikortSignup> {
     );
   }
 
-
   Future<UserCredential?> signUpWithEmailAndPassword(
       String email, String password) async {
+    setState(() {
+      _isLoading =true;
+    });
     try {
       // 1. Create the user with email and password
       UserCredential userCredential =
@@ -101,7 +103,6 @@ class _LikortSignupState extends State<LikortSignup> {
         email: email,
         password: password,
       );
-
       // 2. Check if the user is created
       if (userCredential.user == null) {
         if (kDebugMode) {
@@ -109,7 +110,6 @@ class _LikortSignupState extends State<LikortSignup> {
         }
         return null;
       }
-
       // 3. Get the user ID
       String userId = userCredential.user!.uid;
       print(userId);
@@ -130,7 +130,6 @@ class _LikortSignupState extends State<LikortSignup> {
         'notifications': [],
         'created': FieldValue.serverTimestamp(), // Use server timestamp
       };
-
      for(final user in userData.values){
        print(user);
      }
@@ -139,39 +138,107 @@ class _LikortSignupState extends State<LikortSignup> {
       FirebaseFirestore.instance.collection('users');
       await usersCollection.doc(userId).set(userData).then((_) {
         if (kDebugMode) {
+          //messages shown if user already exists
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
+          // Show the first SnackBar
+          scaffoldMessenger
+              .showSnackBar(
+            const SnackBar(
+              content: Text('sign up successful'),
+              duration: Duration(seconds: 2),
+            ),
+          )
+              .closed
+              .then((_) {
+            // Show the second SnackBar after the first one is closed
+            // scaffoldMessenger.showSnackBar(
+            //   const SnackBar(
+            //     content: Text('Login instead!!!'),
+            //     duration: Duration(seconds: 2),
+            //   ),
+            // );
+          });
+          if (context.mounted) {
+            Navigator.of(context).pushNamed('/likortlogin');
+          }
           print('User data saved successfully!');
           _clearForm();
+          setState(() {
+            _isLoading = false;
+          });
         }
       }).catchError((error) {
         if (kDebugMode) {
+          //messages shown if user already exists
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
+          // Show the first SnackBar
+          scaffoldMessenger
+              .showSnackBar(
+            SnackBar(
+              content: Text('Error signing up $error'),
+              duration: const Duration(seconds: 2),
+            ),
+          )
+              .closed
+              .then((_) {
+            // Show the second SnackBar after the first one is closed
+            // scaffoldMessenger.showSnackBar(
+            //   const SnackBar(
+            //     content: Text('Login instead!!!'),
+            //     duration: Duration(seconds: 2),
+            //   ),
+            // );
+          });
           print('Error saving user data: $error');
+          setState(() {
+            _isLoading = false;
+          });
         }
+        setState(() {
+          _isLoading = false;
+        });
         throw Exception('Failed to save user data: $error');
       });
-
       // 6. Return the user credential
+
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         if (kDebugMode) {
+          setState(() {
+            _isLoading = false;
+          });
           print('The password provided is too weak.');
         }
       } else if (e.code == 'email-already-in-use') {
         if (kDebugMode) {
+          setState(() {
+            _isLoading = false;
+          });
           print('The account already exists for that email.');
         }
       } else {
         if (kDebugMode) {
+          setState(() {
+            _isLoading = false;
+          });
           print('FirebaseAuthException: $e');
         }
       }
       return null;
     } catch (e) {
       if (kDebugMode) {
+        setState(() {
+          _isLoading = false;
+        });
         print('Unexpected Error: $e');
       }
+      setState(() {
+        _isLoading = false;
+      });
       return null;
     }
+
   }
 
   //function to submit signup form
@@ -383,9 +450,9 @@ class _LikortSignupState extends State<LikortSignup> {
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return _isLoading
-        ? const Center(
+        ? const Scaffold(body: Center(
             child: CircularProgressIndicator(),
-          )
+          ))
         : Scaffold(
             body: LayoutBuilder(
               builder: (context, constraints) {
