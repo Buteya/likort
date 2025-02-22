@@ -41,21 +41,18 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
       Map product) async {
     final id = uuid.v4();
     final listProducts = [];
+    List<Map<String,dynamic>> cartItemsList = [];
     try {
       // 1. Create the user with email and password
       var userId = FirebaseAuth.instance.currentUser?.uid;
-
       // 2. Check if the user is created
       if (userId == null) {
         if (kDebugMode) {
           print('user not found');
         }
-        return null;
+        return;
       }
-
-
       listProducts.add(product);
-
       // 3. Get the user ID
       print(userId);
       // 4. Create the user data map
@@ -64,22 +61,23 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
         'userId': userId,
         'product':product,
         'quantity':_quantity,
-        'created': FieldValue.serverTimestamp(), // Use server timestamp
+        'created': DateTime.now(),  // Use server timestamp
       };
+      print(cartItemData);
       //
       // for(final cartItem in cartItemData.values){
       //   print(cartItem);
       // }
       // 5. Save the user data to Firestore
-      CollectionReference usersCollection =
-      FirebaseFirestore.instance.collection('cartitems');
-      var document = await usersCollection.doc(userId).get();
-      var data = document.data()as Map<String,dynamic>;
-      if(!data.containsValue(id)){
-        await usersCollection.doc(userId).set(cartItemData).then((_) {
+       cartItemsList.add(cartItemData);
+       Map<String,dynamic> listCartItems = {
+         'cartItemsList':cartItemsList,
+       };
+          CollectionReference usersCollection =
+          FirebaseFirestore.instance.collection('cartItems');
+      await usersCollection.doc(userId).set(cartItemData).then((_) {
           if (kDebugMode) {
-            print('Cartitems data saved successfully!');
-
+            print('CartItems data saved successfully!');
           }
         }).catchError((error) {
           if (kDebugMode) {
@@ -87,7 +85,6 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
           }
           throw Exception('Failed to save cartitems data: $error');
         });
-      }
 
     } catch (e) {
       if (kDebugMode) {
@@ -446,6 +443,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                         var id = const Uuid().v4();
                         if(_quantity >= 1){
                           createCartItem(products[index]);
+                          Navigator.of(context).pushNamed('/likortcart');
                           // cartItems.add(CartItem(id: id,userId: Provider.of<User>(context,listen:false).users.last.id, product: products[index],quantity: _quantity,),);
                         }
                        for(var item in cartItems.cartItems){
@@ -454,7 +452,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
                          print(item.product.id);
                          print(item.quantity);
                        }
-                       Navigator.of(context).pushReplacementNamed('/likortcart');
+
                       },
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,

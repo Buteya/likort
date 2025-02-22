@@ -203,7 +203,7 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
   Future<List<Map<String, dynamic>>> fetchCartItemData() async {
     try {
       QuerySnapshot querySnapshot =
-      await FirebaseFirestore.instance.collection('cartitems').get();
+      await FirebaseFirestore.instance.collection('cartItems').get();
       List<Map<String, dynamic>> items = [];
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
         items.add(doc.data() as Map<String, dynamic>);
