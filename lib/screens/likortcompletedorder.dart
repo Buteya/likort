@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LikortCompletedOrder extends StatefulWidget {
@@ -10,7 +11,14 @@ class LikortCompletedOrder extends StatefulWidget {
 class _LikortCompletedOrderState extends State<LikortCompletedOrder> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
+        :Scaffold(
       appBar: AppBar(
         title: const Text('Order Completed'),
       ),

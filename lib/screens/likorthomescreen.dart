@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-
 import '../models/likortfavorites.dart';
 import '../widgets/customappbar.dart';
 
@@ -29,7 +28,7 @@ class LikortHomeScreen extends StatefulWidget {
 class _LikortHomeScreenState extends State<LikortHomeScreen> {
   var uuid = const Uuid();
   bool _isLoading = false;
-  RangeValues currentRangeValues =  const RangeValues(0, 100);
+  RangeValues currentRangeValues = const RangeValues(0, 100);
   final _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _searchBarVisible = true;
@@ -38,9 +37,9 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   List<Map<String, dynamic>> filteredProducts = [];
   List<Map<String, dynamic>> favoriteProducts = [];
   Set<dynamic> get categories {
-    if(filteredProducts.isNotEmpty){
+    if (filteredProducts.isNotEmpty) {
       return filteredProducts.map((product) => product['typeOfArt']).toSet();
-    }else{
+    } else {
       return <dynamic>{};
     }
   }
@@ -48,7 +47,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   final CollectionReference _itemsCollection = FirebaseFirestore.instance
       .collection('products'); //Change myCollection to your collection name
   String storeName = '';
-  List<Map<String,dynamic>> stores = [];
+  List<Map<String, dynamic>> stores = [];
 
   @override
   void initState() {
@@ -56,30 +55,29 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     _loadUserData();
     loadStoreData();
     _scrollController.addListener(_scrollListener);
-  _loadFavoriteData();
+    _loadFavoriteData();
   }
 
   void _filterProducts(String query) {
-    try{
-      final List<Map<String, dynamic>> filtered =
-      filteredProducts.isNotEmpty?
-        filteredProducts.where((product) {
-          final productNameLower = product['name'].toLowerCase();
-          final queryLower = query.toLowerCase();
-          return productNameLower.contains(queryLower);
-        }).toList():[];
+    try {
+      final List<Map<String, dynamic>> filtered = filteredProducts.isNotEmpty
+          ? filteredProducts.where((product) {
+              final productNameLower = product['name'].toLowerCase();
+              final queryLower = query.toLowerCase();
+              return productNameLower.contains(queryLower);
+            }).toList()
+          : [];
 
-      if(filtered.isNotEmpty){
+      if (filtered.isNotEmpty) {
         setState(() {
           filteredProducts = filtered;
         });
       }
-    } catch (e){
+    } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
     }
-
   }
 
   @override
@@ -88,12 +86,13 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     _scrollController.dispose();
     super.dispose();
   }
-  Future<void> deleteDocumentByFieldValue(
-      String collectionName, String fieldName, dynamic fieldValue, String userId) async {
+
+  Future<void> deleteDocumentByFieldValue(String collectionName,
+      String fieldName, dynamic fieldValue, String userId) async {
     try {
       // 1. Get a reference to the Firestore collection.
       CollectionReference collection =
-      FirebaseFirestore.instance.collection(collectionName);
+          FirebaseFirestore.instance.collection(collectionName);
 
       // 2. Create a query to find the document with thespecific field value.
       Query query = collection.where(fieldName, isEqualTo: fieldValue);
@@ -131,8 +130,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     }
   }
 
-  Future<void> createFavorite(
-      Map products) async {
+  Future<void> createFavorite(Map products) async {
     final id = uuid.v4();
     final listProducts = [];
     try {
@@ -147,8 +145,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         return;
       }
 
-
-        listProducts.add(products);
+      listProducts.add(products);
 
       // 3. Get the user ID
       print(userId);
@@ -160,16 +157,15 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         'created': FieldValue.serverTimestamp(), // Use server timestamp
       };
 
-      for(final favorite in favoriteData.values){
+      for (final favorite in favoriteData.values) {
         print(favorite);
       }
       // 5. Save the user data to Firestore
       CollectionReference usersCollection =
-      FirebaseFirestore.instance.collection('favorites');
+          FirebaseFirestore.instance.collection('favorites');
       await usersCollection.doc(userId).set(favoriteData).then((_) {
         if (kDebugMode) {
           print('User data saved successfully!');
-
         }
       }).catchError((error) {
         if (kDebugMode) {
@@ -177,15 +173,12 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         }
         throw Exception('Failed to save user data: $error');
       });
-
     } catch (e) {
       if (kDebugMode) {
         print('Unexpected Error: $e');
       }
     }
   }
-
-
 
   String _findNewestCategory(List<Map<String, dynamic>> products) {
     if (products.isEmpty) {
@@ -196,7 +189,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     for (var product in products) {
       String category = product['typeOfArt'];
       dynamic dateAdded = product['lastUpdated'];
-      if (!categoryLatestDate.containsKey(category) || dateAdded.isAfter(categoryLatestDate[category]!)) {
+      if (!categoryLatestDate.containsKey(category) ||
+          dateAdded.isAfter(categoryLatestDate[category]!)) {
         categoryLatestDate[category] = dateAdded;
       }
     }
@@ -240,20 +234,22 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     setState(() {
       if (_selectedCategory == 'All') {
         filteredProducts = filteredProducts;
-      } else if(category == 'Paintings'  && filteredProducts.any((item)=>item['typeOfArt']==category)){
+      } else if (category == 'Paintings' &&
+          filteredProducts.any((item) => item['typeOfArt'] == category)) {
         filteredProducts = filteredProducts.where((item) {
           return item['typeOfArt'] == category;
         }).toList();
-      } else if(category == 'Decor' && filteredProducts.any((item)=>item['typeOfArt']==category)){
+      } else if (category == 'Decor' &&
+          filteredProducts.any((item) => item['typeOfArt'] == category)) {
         filteredProducts = filteredProducts.where((item) {
           return item['typeOfArt'] == category;
         }).toList();
-      } else if(category == 'Popular' ){
+      } else if (category == 'Popular') {
         filteredProducts = filteredProducts.where((item) {
-          return item['typeOfArt'] == _findMostFrequentCategory(filteredProducts);
+          return item['typeOfArt'] ==
+              _findMostFrequentCategory(filteredProducts);
         }).toList();
-      }
-      else if(category == 'New' ){
+      } else if (category == 'New') {
         filteredProducts = filteredProducts.where((item) {
           return item['typeOfArt'] == _findNewestCategory(filteredProducts);
         }).toList();
@@ -286,14 +282,14 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         .toList();
   }
 
-  Future<void> loadStoreData() async{
+  Future<void> loadStoreData() async {
     try {
-      final userData =  await fetchStoreData();
+      final userData = await fetchStoreData();
       setState(() {
         stores = userData;
         _isLoading = false;
       });
-        } catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -303,7 +299,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     }
   }
 
-  String getStoreName(String storeId)  {
+  String getStoreName(String storeId) {
     final store = stores.firstWhere(
       (store) => store['id'] == storeId,
       orElse: () => {}, // Handle case where store is not found
@@ -321,7 +317,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         filteredProducts = userData;
         _isLoading = false;
       });
-        } catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -330,6 +326,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
       });
     }
   }
+
   Future<void> _loadFavoriteData() async {
     try {
       final userData = await fetchData();
@@ -337,7 +334,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         favoriteProducts = userData;
         _isLoading = false;
       });
-        } catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -347,10 +344,10 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     }
   }
 
-
   Future<List<Map<String, dynamic>>> fetchFavoriteData() async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('favorites').get();
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('favorites').get();
       List<Map<String, dynamic>> items = [];
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
         items.add(doc.data() as Map<String, dynamic>);
@@ -365,7 +362,8 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
 
   Future<List<Map<String, dynamic>>> fetchStoreData() async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('stores').get();
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('stores').get();
       List<Map<String, dynamic>> items = [];
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
         items.add(doc.data() as Map<String, dynamic>);
@@ -413,418 +411,498 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     );
     // _selectedCategory = categories.first;
 
-    return _isLoading?const Scaffold(body:Center(child: CircularProgressIndicator(),),):Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(
-          appTitle: appTitle,
-          appThemeMode: appThemeMode,
-          toggleThemeMode: toggleThemeMode,
-        ),
-      ),
-      body: Column(
-        children: [
-          AnimatedOpacity(
-            opacity: _searchBarVisible ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 300),
-            child: SizedBox(
-              height: _searchBarVisible
-                  ? MediaQuery.of(context).size.height * .28
-                  : MediaQuery.of(context).size.height * .01,
-              child: _searchBarVisible
-                  ? Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 29.0,
-                            right: 29.0,
-                          ),
-                          child: Text(
-                            'Discover the world\'s finest art',
-                            style: GoogleFonts.openSans(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 29.0, right: 29),
-                          child: Text(
-                            'Explore works from the most talented artists showcasing their most finest works',
-                            style: GoogleFonts.openSans(
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 29.0, right: 29.0, top: 10.0),
-                          child: Row(
-                            children: [
-                              Flexible(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    FocusScope.of(context).requestFocus(
-                                        _searchFocusNode); // _searchFocusNode is a FocusNode
-                                  },
-                                  child: TextField(
-                                    controller: _searchController,
-                                    decoration: InputDecoration(
-                                      hintStyle: TextStyle(
-                                        color: isDark
-                                            ? Colors.white54
-                                            : Colors.black54,
-                                      ),
-                                      hintText: 'Search...',
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        borderSide: BorderSide.none,
-                                      ),
-                                      filled: true,
-                                      fillColor: isDark
-                                          ? Colors.grey[800]
-                                          : Colors.grey[200],
-                                      prefixIcon: const Icon(
-                                        Icons.search,
+    return _isLoading
+        ? const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          )
+        : FirebaseAuth.instance.currentUser == null
+            ? Scaffold(
+                body: TextButton(
+                    onPressed: () => Navigator.of(context)
+                        .pushReplacementNamed('/likortlogin'),
+                    child: const Text('Login')),
+              )
+            : Scaffold(
+                appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: CustomAppBar(
+                    appTitle: appTitle,
+                    appThemeMode: appThemeMode,
+                    toggleThemeMode: toggleThemeMode,
+                  ),
+                ),
+                body: Column(
+                  children: [
+                    AnimatedOpacity(
+                      opacity: _searchBarVisible ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: SizedBox(
+                        height: _searchBarVisible
+                            ? MediaQuery.of(context).size.height * .28
+                            : MediaQuery.of(context).size.height * .01,
+                        child: _searchBarVisible
+                            ? Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 29.0,
+                                      right: 29.0,
+                                    ),
+                                    child: Text(
+                                      'Discover the world\'s finest art',
+                                      style: GoogleFonts.openSans(
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    onChanged: (query) {
-                                      _filterProducts(query);
-                                    },
                                   ),
-                                ),
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          title: const Text('Filter art by'),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Text('Type of art',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
-                                              const Divider(),
-                                              Padding(
-                                                padding: const EdgeInsets.all(16.0),
-                                                child: SizedBox(
-                                                  width: double.infinity,
-                                                  child: DropdownButton<String>(
-                                                    isExpanded: true,
-                                                    value: _selectedCategory = categories.first,
-                                                    items: categories
-                                                        .map(
-                                                          (category) =>
-                                                              DropdownMenuItem<
-                                                                  String>(
-                                                            value: category,
-                                                            child: Text(category,)
-                                                          ),
-                                                        )
-                                                        .toList(),
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        _selectedCategory = value!;
-                                                      });
-                                                    },
-                                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 29.0, right: 29),
+                                    child: Text(
+                                      'Explore works from the most talented artists showcasing their most finest works',
+                                      style: GoogleFonts.openSans(
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 29.0, right: 29.0, top: 10.0),
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              FocusScope.of(context).requestFocus(
+                                                  _searchFocusNode); // _searchFocusNode is a FocusNode
+                                            },
+                                            child: TextField(
+                                              controller: _searchController,
+                                              decoration: InputDecoration(
+                                                hintStyle: TextStyle(
+                                                  color: isDark
+                                                      ? Colors.white54
+                                                      : Colors.black54,
+                                                ),
+                                                hintText: 'Search...',
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0),
+                                                  borderSide: BorderSide.none,
+                                                ),
+                                                filled: true,
+                                                fillColor: isDark
+                                                    ? Colors.grey[800]
+                                                    : Colors.grey[200],
+                                                prefixIcon: const Icon(
+                                                  Icons.search,
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () {
-                                                // _applyFilters(); // Apply filters when dialog is closed
-                                                Navigator.of(context).pop();
+                                              onChanged: (query) {
+                                                _filterProducts(query);
                                               },
-                                              child: const Text('Cancel'),
                                             ),
-                                          ],
-                                        );
-                                      });
-                                },
-                                child: const Card(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.tune_rounded,
-                                      size: 30,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                  : null,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 29.0, bottom: 10.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                    _applyFilters('New');
-                    },
-                    child: const Text('New'),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _applyFilters('Popular');
-                    },
-                    child: const Text('Popular'),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _applyFilters('Paintings');
-                      setState(() {
-                        // _filteredItems = searchProductsByType(allProducts, text).cast<String>();
-                      });
-                    },
-                    child: const Text('Painting'),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _applyFilters('Decor');
-                    },
-                    child: const Text('Decor'),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: _searchBarVisible
-                  ? MediaQuery.of(context)
-                      .size
-                      .height // Adjust height when search bar is visible
-                  : MediaQuery.of(context).size.height,
-              child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: fetchData(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                    return snapshot.connectionState == ConnectionState.waiting
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : snapshot.hasError
-                            ? Center(child: Text('Error: ${snapshot.error}'))
-                            : snapshot.hasData
-                                ? Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0),
-                                    child: GridView.builder(
-                                        controller: _scrollController,
-                                        gridDelegate:
-                                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                              childAspectRatio: 0.39,
-                                          crossAxisCount:
-                                              2, // Number of items per row
-                                          crossAxisSpacing:
-                                              8.0, // Spacing between columns
-                                          mainAxisSpacing:
-                                              8.0, // Spacing between rows
+                                          ),
                                         ),
-                                        itemCount: filteredProducts.length,
-                                        itemBuilder: (context, index) {
-                                          return InkWell(
-                                              onTap: () {
-                                                Navigator.of(context).pushNamed(
-                                                    '/likortproductdetail',
-                                                    arguments: index);
-                                              },
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  mainAxisSize: MainAxisSize.max,
-                                                  children: [
-                                                    ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                                15.0),
-
-                                                        child:
-                                                          FadeInImage(
-                                                            placeholder:  const AssetImage('assets/placeholder.png'), // Replace with your placeholder image asset
-                                                            image: NetworkImage(filteredProducts[index]['imageUrls'][0]),
-                                                            width: screenSize.width * .83,
-                                                            height: screenSize.height / 2.66,
-                                                            fit: BoxFit.cover,
-                                                            imageErrorBuilder: (context, error, stackTrace) {
-                                                              return Center(
-                                                                child: Icon(
-                                                                  Icons.error_outline,
-                                                                  size: screenSize.width * 0.2, // Adjust size as needed
-                                                                  color: Colors.red,
-                                                                ),
-                                                              );
-                                                            },
-                                                            placeholderErrorBuilder: (context, error, stackTrace) {
-                                                              return Center(
-                                                                child: Icon(
-                                                                  Icons.image,
-                                                                  size: screenSize.width * 0.2, // Adjust size as needed
-                                                                  color: Colors.grey,
-                                                                ),
-                                                              );
-                                                            },
+                                        InkWell(
+                                          onTap: () {
+                                            showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    title: const Text(
+                                                        'Filter art by'),
+                                                    content: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        const Text(
+                                                          'Type of art',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 15),
                                                         ),
-                                                      ),
-
-                                                    Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment.end,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(top: 8.0),
-                                                            child: InkWell(
-                                                              onTap: () {
+                                                        const Divider(),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(16.0),
+                                                          child: SizedBox(
+                                                            width:
+                                                                double.infinity,
+                                                            child:
+                                                                DropdownButton<
+                                                                    String>(
+                                                              isExpanded: true,
+                                                              value:
+                                                                  _selectedCategory =
+                                                                      categories
+                                                                          .first,
+                                                              items: categories
+                                                                  .map(
+                                                                    (category) => DropdownMenuItem<
+                                                                            String>(
+                                                                        value:
+                                                                            category,
+                                                                        child:
+                                                                            Text(
+                                                                          category,
+                                                                        )),
+                                                                  )
+                                                                  .toList(),
+                                                              onChanged:
+                                                                  (value) {
                                                                 setState(() {
-
-                                                                  if (!favoriteProducts
-                                                                      .any((item){
-                                                                    return item['id'] == snapshot.data![index]['id'];
-                                                                  }
-                                                                  )) {
-                                                                    //add favorites
-                                                                    createFavorite(snapshot.data![index]);
-                                                                  } else if (favoriteProducts
-                                                                      .any((item){
-                                                                    return item['id'] == snapshot.data![index]['id'];
-                                                                  }
-                                                                  )) {
-                                                                    //remove favorite
-                                                                    favoriteProducts.remove(snapshot.data![index]);
-                                                                    deleteDocumentByFieldValue('favorites', 'id', snapshot.data![index]['id'],FirebaseAuth.instance.currentUser!.uid);
-                                                                  }
+                                                                  _selectedCategory =
+                                                                      value!;
                                                                 });
                                                               },
-                                                              child:favoriteProducts
-                                                                  .any((item){
-                                                                return item['id'] == snapshot.data![index]['id'];
-                                                              }
-                                                              )
-                                                                  ? Icon(
-                                                                      Icons
-                                                                          .favorite_rounded,
-                                                                      color: favoriteProducts
-                                                                              .any((item){
-                                                                              return item['id'] == snapshot.data![index]['id'];
-                                                                      }
-                                                                                  )
-                                                                          ? Colors
-                                                                              .red
-                                                                          : Colors
-                                                                              .grey,
-                                                                    )
-                                                                  : Icon(
-                                                                      Icons
-                                                                          .favorite_border_rounded,
-                                                                      color: favoriteProducts
-                                                                          .any((item){
-                                                                        return item['id'] == snapshot.data![index]['id'];
-                                                                      }
-                                                                      )
-                                                                          ? Colors
-                                                                              .red
-                                                                          : Colors
-                                                                              .grey,
-                                                                    ),
                                                             ),
                                                           ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          // _applyFilters(); // Apply filters when dialog is closed
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: const Text(
+                                                            'Cancel'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                });
+                                          },
+                                          child: const Card(
+                                            child: Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Icon(
+                                                Icons.tune_rounded,
+                                                size: 30,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : null,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 29.0, bottom: 10.0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                _applyFilters('New');
+                              },
+                              child: const Text('New'),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                _applyFilters('Popular');
+                              },
+                              child: const Text('Popular'),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                _applyFilters('Paintings');
+                                setState(() {
+                                  // _filteredItems = searchProductsByType(allProducts, text).cast<String>();
+                                });
+                              },
+                              child: const Text('Painting'),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                _applyFilters('Decor');
+                              },
+                              child: const Text('Decor'),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        height: _searchBarVisible
+                            ? MediaQuery.of(context)
+                                .size
+                                .height // Adjust height when search bar is visible
+                            : MediaQuery.of(context).size.height,
+                        child: FutureBuilder<List<Map<String, dynamic>>>(
+                            future: fetchData(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<Map<String, dynamic>>>
+                                    snapshot) {
+                              return snapshot.connectionState ==
+                                      ConnectionState.waiting
+                                  ? const Center(
+                                      child: CircularProgressIndicator(),
+                                    )
+                                  : snapshot.hasError
+                                      ? Center(
+                                          child:
+                                              Text('Error: ${snapshot.error}'))
+                                      : snapshot.hasData
+                                          ? Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16.0),
+                                              child: GridView.builder(
+                                                  controller: _scrollController,
+                                                  gridDelegate:
+                                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                                    childAspectRatio: 0.39,
+                                                    crossAxisCount:
+                                                        2, // Number of items per row
+                                                    crossAxisSpacing:
+                                                        8.0, // Spacing between columns
+                                                    mainAxisSpacing:
+                                                        8.0, // Spacing between rows
+                                                  ),
+                                                  itemCount:
+                                                      filteredProducts.length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    return InkWell(
+                                                      onTap: () {
+                                                        Navigator.of(context)
+                                                            .pushNamed(
+                                                                '/likortproductdetail',
+                                                                arguments:
+                                                                    index);
+                                                      },
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        15.0),
+                                                            child: FadeInImage(
+                                                              placeholder:
+                                                                  const AssetImage(
+                                                                      'assets/placeholder.png'), // Replace with your placeholder image asset
+                                                              image: NetworkImage(
+                                                                  filteredProducts[
+                                                                          index]
+                                                                      [
+                                                                      'imageUrls'][0]),
+                                                              width: screenSize
+                                                                      .width *
+                                                                  .83,
+                                                              height: screenSize
+                                                                      .height /
+                                                                  2.66,
+                                                              fit: BoxFit.cover,
+                                                              imageErrorBuilder:
+                                                                  (context,
+                                                                      error,
+                                                                      stackTrace) {
+                                                                return Center(
+                                                                  child: Icon(
+                                                                    Icons
+                                                                        .error_outline,
+                                                                    size: screenSize
+                                                                            .width *
+                                                                        0.2, // Adjust size as needed
+                                                                    color: Colors
+                                                                        .red,
+                                                                  ),
+                                                                );
+                                                              },
+                                                              placeholderErrorBuilder:
+                                                                  (context,
+                                                                      error,
+                                                                      stackTrace) {
+                                                                return Center(
+                                                                  child: Icon(
+                                                                    Icons.image,
+                                                                    size: screenSize
+                                                                            .width *
+                                                                        0.2, // Adjust size as needed
+                                                                    color: Colors
+                                                                        .grey,
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .end,
+                                                            children: [
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        top:
+                                                                            8.0),
+                                                                child: InkWell(
+                                                                  onTap: () {
+                                                                    setState(
+                                                                        () {
+                                                                      if (!favoriteProducts
+                                                                          .any(
+                                                                              (item) {
+                                                                        return item['id'] ==
+                                                                            snapshot.data![index]['id'];
+                                                                      })) {
+                                                                        //add favorites
+                                                                        createFavorite(
+                                                                            snapshot.data![index]);
+                                                                      } else if (favoriteProducts
+                                                                          .any(
+                                                                              (item) {
+                                                                        return item['id'] ==
+                                                                            snapshot.data![index]['id'];
+                                                                      })) {
+                                                                        //remove favorite
+                                                                        favoriteProducts
+                                                                            .remove(snapshot.data![index]);
+                                                                        deleteDocumentByFieldValue(
+                                                                            'favorites',
+                                                                            'id',
+                                                                            snapshot.data![index]['id'],
+                                                                            FirebaseAuth.instance.currentUser!.uid);
+                                                                      }
+                                                                    });
+                                                                  },
+                                                                  child: favoriteProducts
+                                                                          .any(
+                                                                              (item) {
+                                                                    return item[
+                                                                            'id'] ==
+                                                                        snapshot.data![index]
+                                                                            [
+                                                                            'id'];
+                                                                  })
+                                                                      ? Icon(
+                                                                          Icons
+                                                                              .favorite_rounded,
+                                                                          color: favoriteProducts.any((item) {
+                                                                            return item['id'] ==
+                                                                                snapshot.data![index]['id'];
+                                                                          })
+                                                                              ? Colors.red
+                                                                              : Colors.grey,
+                                                                        )
+                                                                      : Icon(
+                                                                          Icons
+                                                                              .favorite_border_rounded,
+                                                                          color: favoriteProducts.any((item) {
+                                                                            return item['id'] ==
+                                                                                snapshot.data![index]['id'];
+                                                                          })
+                                                                              ? Colors.red
+                                                                              : Colors.grey,
+                                                                        ),
+                                                                ),
+                                                              ),
+                                                              SizedBox(
+                                                                width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width *
+                                                                    .1,
+                                                              )
+                                                            ],
+                                                          ),
+                                                          Text(
+                                                            filteredProducts[
+                                                                index]['name'],
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 14,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            getStoreName(
+                                                                filteredProducts[
+                                                                        index][
+                                                                    'storeId']),
+                                                            style: const TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                          Text(
+                                                            '\$${filteredProducts[index]['price']}',
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyLarge,
+                                                          ),
                                                           SizedBox(
-                                                            width: MediaQuery.of(
+                                                            height: MediaQuery.of(
                                                                         context)
                                                                     .size
-                                                                    .width *
+                                                                    .height *
                                                                 .1,
                                                           )
                                                         ],
                                                       ),
-
-                                                   Text(
-                                                        filteredProducts[index]
-                                                            ['name'],
-                                                        style: const TextStyle(
-                                                          fontSize: 14,
-                                                        ),
-                                                      ),
-
-                                                    Text(
-                                                        getStoreName(filteredProducts[index]['storeId']),
-                                                        style: const TextStyle(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold),
-                                                      ),
-
-                                                    Text(
-                                                        '\$${filteredProducts[index]['price']}',
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyLarge,
-                                                      ),
-
-                                                    SizedBox(
-                                                      height: MediaQuery.of(context)
-                                                              .size
-                                                              .height *
-                                                          .1,
-                                                    )
-                                                  ],
-                                                ),
-
+                                                    );
+                                                  }),
                                             )
-                                          ;
-                                        }),
-                                  )
-                                : const Center(
-                                    child: Text('No art to display'),
-                                  );
-                  }),
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: _searchBarVisible
-          ? null
-          : FloatingActionButton.small(
-              onPressed: () {
-                setState(() {
-                  _searchBarVisible = !_searchBarVisible;
-                });
-              },
-              child: const Center(
-                child: Icon(
-                  Icons.search,
+                                          : const Center(
+                                              child: Text('No art to display'),
+                                            );
+                            }),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-    );
+                floatingActionButton: _searchBarVisible
+                    ? null
+                    : FloatingActionButton.small(
+                        onPressed: () {
+                          setState(() {
+                            _searchBarVisible = !_searchBarVisible;
+                          });
+                        },
+                        child: const Center(
+                          child: Icon(
+                            Icons.search,
+                          ),
+                        ),
+                      ),
+              );
   }
 }

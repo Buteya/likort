@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LikortPaymentFailureScreen extends StatefulWidget {
@@ -32,7 +33,14 @@ class _LikortPaymentFailureScreenState extends State<LikortPaymentFailureScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
+        :Scaffold(
       body:Column(
           children: [
             SizedBox(height: MediaQuery.of(context).size.height*.3,),

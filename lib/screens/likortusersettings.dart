@@ -79,7 +79,14 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
   Widget build(BuildContext context) {
     final List<String> items = ['Change Password', 'Change Delivery Location', 'Create Store','Manage Store', 'Delete Account',];
 
-    return Scaffold(
+    return  FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
+        :Scaffold(
       appBar: AppBar(
         leading: Builder(
           builder: (context) => IconButton(

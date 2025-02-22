@@ -298,7 +298,14 @@ class _LikortBuildCreatorStoreState extends State<LikortBuildCreatorStore> {
   Widget build(BuildContext context) {
     const totalSteps = 3; // Total number of steps
 
-    return Scaffold(
+    return FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
+        : Scaffold(
       appBar: AppBar(
         title: const Text('create likort store'),
         centerTitle: true,

@@ -1,11 +1,12 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/likortusers.dart';
+import '../models/likortusers.dart' as userLikort;
 
 class LikortCreateUser extends StatefulWidget {
   const LikortCreateUser({super.key});
@@ -32,8 +33,8 @@ class _LikortCreateUserState extends State<LikortCreateUser> {
     });
 
     //function submit variables
-    User? users;
-    users = Provider.of<User>(context, listen: false);
+    userLikort.User? users;
+    users = Provider.of<userLikort.User>(context, listen: false);
     final encodedPassword =
         base64.encode(utf8.encode(_passwordController.text));
 
@@ -45,7 +46,7 @@ class _LikortCreateUserState extends State<LikortCreateUser> {
       if (users.users.isNotEmpty &&
           (users.users.last.email != _emailController.text)) {
         try {
-          users.add(User(
+          users.add(userLikort.User(
             id: id,
             firstname: _firstnameController.text,
             lastname: _lastnameController.text,
@@ -73,7 +74,7 @@ class _LikortCreateUserState extends State<LikortCreateUser> {
         Navigator.of(context).pushNamed('/likortviewallusers');
       } else if (users.users.isEmpty) {
         try {
-          users.add(User(
+          users.add(userLikort.User(
             id: id,
             firstname: _firstnameController.text,
             lastname: _lastnameController.text,
@@ -183,6 +184,13 @@ class _LikortCreateUserState extends State<LikortCreateUser> {
         ? const Center(
             child: CircularProgressIndicator(),
           )
+        : FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
         : Scaffold(
             appBar: AppBar(),
             body: Padding(

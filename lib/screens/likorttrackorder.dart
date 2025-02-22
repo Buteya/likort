@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -11,7 +12,14 @@ class LikortTrackOrder extends StatefulWidget {
 class _LikortTrackOrderState extends State<LikortTrackOrder> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
+        :Scaffold(
       appBar: AppBar(
         title: const Text('Order Details'),
       ),

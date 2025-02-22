@@ -292,7 +292,14 @@ class _LikortCreateArtProductState extends State<LikortCreateArtProduct> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
+        : Scaffold(
       appBar: AppBar(
         title: const Text('create art product'),
         centerTitle: true,

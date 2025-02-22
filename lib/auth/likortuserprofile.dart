@@ -246,7 +246,14 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
+    return FirebaseAuth.instance.currentUser == null
+        ? Scaffold(
+      body: TextButton(
+          onPressed: () => Navigator.of(context)
+              .pushReplacementNamed('/likortlogin'),
+          child: const Text('Login')),
+    )
+        : Scaffold(
       appBar: AppBar(
         leading: Builder(
           builder: (context) => IconButton(

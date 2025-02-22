@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 
 class LikortCartScreen extends StatefulWidget {
   const LikortCartScreen({super.key});
@@ -22,7 +22,6 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
     loadStoreData();
     super.initState();
   }
-
 
   Future<List<Map<String, dynamic>>> fetchCartItemData() async {
     try {
@@ -47,7 +46,7 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
         cartItems = userData;
         _isLoading = false;
       });
-        } catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -80,7 +79,7 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
         stores = userData;
         _isLoading = false;
       });
-        } catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -103,203 +102,194 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading?const Scaffold(body: Center(child: CircularProgressIndicator(),),):Scaffold(
-      appBar: AppBar(
-        leading: InkWell(
-          onTap: () {
-            Navigator.of(context).pushReplacementNamed('/likorthomescreen');
-          },
-          child: const Icon(Icons.arrow_back),
-        ),
-        title: const Center(child: Text('cart')),
-        actions: const [
-          Card(
-            child: Icon(Icons.delete),
-          ),
-        ],
-      ),
-      body: cartItems.isEmpty
-          ? const Center(
-              child: Text(
-                'Start shopping',
-              ),
-            )
-          : Column(
-              children: [
-                Flexible(
-                  child: ListView.builder(
-                      itemCount: cartItems.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Row(
-                                    children: [
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                .05,
-                                      ),
-                                      const Icon(
-                                        Icons.shopping_basket_rounded,
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                .02,
-                                      ),
-                                      Text(
-                                        getStoreName(
-                                          cartItems[index]['product']
-                                              ['storeId'],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: const Text('view shop'),
-                                ),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * .03,
-                                ),
-                              ],
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 16.0, right: 16.0),
-                              child: Divider(),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(15.0),
-                                  child: Image.network(
-                                    cartItems[index]['product']['imageUrls'][0],
-                                    width: 75,
-                                    height: 75,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(cartItems[index]['product']['name']),
-                                      Text(
-                                        getStoreName(
-                                          cartItems[index]['product']
-                                              ['storeId'],
-                                        ),
-                                      ),
-                                      Text(
-                                          '\$${cartItems[index]['product']['price']}'),
-                                    ],
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            cartItems[index]['quantity']++;
-                                          });
-                                        },
-                                        child: const Card(
-                                          child: Icon(
-                                            Icons.add,
-                                          ),
-                                        ),
-                                      ),
-                                      Text(cartItems[index]['quantity']
-                                          .toString()),
-                                      InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            if (cartItems[index]['quantity'] >
-                                                1) {
-                                              cartItems[index]['quantity']--;
-                                            }
-                                          });
-                                        },
-                                        child: const Card(
-                                          child: Icon(
-                                            Icons.remove,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      }),
-                ),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * .07,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Flexible(
-                      child: Column(
-                        children: [
-                          const Text('amount price'),
-                          Text(
-                            cartItems.fold(
-                              0.0,
-                              (double cartSum, Map<String, dynamic> item) {
-                                // Safely get the price and quantity.
-                                double price = double.tryParse(
-                                        item['product']['price']?.toString() ??
-                                            '0') ??
-                                    0.0;
-                                //double quantity = double.tryParse(item.product['quantity']?.toString() ?? '0') ?? 0.0;
-                                int quantity = item['quantity'];
-
-                                // Calculate the item total.
-                                double itemTotal = price * quantity;
-
-                                // Add the item total to the running sum.
-                                return cartSum + itemTotal;
-                              },
-                            ).toStringAsFixed(2),
-                            style: Theme.of(context).textTheme.headlineLarge,
-                          ),
-                        ],
-                      ),
+    return _isLoading
+        ? const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          )
+        : FirebaseAuth.instance.currentUser == null
+            ? Scaffold(
+                body: TextButton(
+                    onPressed: () => Navigator.of(context)
+                        .pushReplacementNamed('/likortlogin'),
+                    child: const Text('Login')),
+              )
+            : Scaffold(
+                appBar: AppBar(
+                  leading: InkWell(
+                    onTap: () {
+                      Navigator.of(context)
+                          .pushReplacementNamed('/likorthomescreen');
+                    },
+                    child: const Icon(Icons.arrow_back),
+                  ),
+                  title: const Center(child: Text('cart')),
+                  actions: const [
+                    Card(
+                      child: Icon(Icons.delete),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushReplacementNamed('/likortcheckout');
-                        },
-                        child: Row(
-                          children: [
-                            const Text('checkout'),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Card(
-                                child: Center(
-                                    child: Text(
+                  ],
+                ),
+                body: cartItems.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Start shopping',
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          Flexible(
+                            child: ListView.builder(
+                                itemCount: cartItems.length,
+                                itemBuilder: (context, index) {
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      .05,
+                                                ),
+                                                const Icon(
+                                                  Icons.shopping_basket_rounded,
+                                                ),
+                                                SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      .02,
+                                                ),
+                                                Text(
+                                                  getStoreName(
+                                                    cartItems[index]['product']
+                                                        ['storeId'],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {},
+                                            child: const Text('view shop'),
+                                          ),
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                .03,
+                                          ),
+                                        ],
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                            left: 16.0, right: 16.0),
+                                        child: Divider(),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(15.0),
+                                            child: Image.network(
+                                              cartItems[index]['product']
+                                                  ['imageUrls'][0],
+                                              width: 75,
+                                              height: 75,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          Flexible(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(cartItems[index]['product']
+                                                    ['name']),
+                                                Text(
+                                                  getStoreName(
+                                                    cartItems[index]['product']
+                                                        ['storeId'],
+                                                  ),
+                                                ),
+                                                Text(
+                                                    '\$${cartItems[index]['product']['price']}'),
+                                              ],
+                                            ),
+                                          ),
+                                          Flexible(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      cartItems[index]
+                                                          ['quantity']++;
+                                                    });
+                                                  },
+                                                  child: const Card(
+                                                    child: Icon(
+                                                      Icons.add,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(cartItems[index]
+                                                        ['quantity']
+                                                    .toString()),
+                                                InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      if (cartItems[index]
+                                                              ['quantity'] >
+                                                          1) {
+                                                        cartItems[index]
+                                                            ['quantity']--;
+                                                      }
+                                                    });
+                                                  },
+                                                  child: const Card(
+                                                    child: Icon(
+                                                      Icons.remove,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                }),
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * .07,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Flexible(
+                                child: Column(
+                                  children: [
+                                    const Text('amount price'),
+                                    Text(
                                       cartItems.fold(
                                         0.0,
-                                            (double cartSum, Map<String, dynamic> item) {
+                                        (double cartSum,
+                                            Map<String, dynamic> item) {
                                           // Safely get the price and quantity.
                                           double price = double.tryParse(
-                                              item['product']['price']?.toString() ??
-                                                  '0') ??
+                                                  item['product']['price']
+                                                          ?.toString() ??
+                                                      '0') ??
                                               0.0;
                                           //double quantity = double.tryParse(item.product['quantity']?.toString() ?? '0') ?? 0.0;
                                           int quantity = item['quantity'];
@@ -308,23 +298,66 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
                                           double itemTotal = price * quantity;
 
                                           // Add the item total to the running sum.
-                                          return cartSum + quantity;
+                                          return cartSum + itemTotal;
                                         },
-                                      ).toStringAsFixed(0),
-                                )),
+                                      ).toStringAsFixed(2),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineLarge,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            )
-                          ],
-                        ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacementNamed(
+                                        '/likortcheckout');
+                                  },
+                                  child: Row(
+                                    children: [
+                                      const Text('checkout'),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Card(
+                                          child: Center(
+                                              child: Text(
+                                            cartItems.fold(
+                                              0.0,
+                                              (double cartSum,
+                                                  Map<String, dynamic> item) {
+                                                // Safely get the price and quantity.
+                                                double price = double.tryParse(
+                                                        item['product']['price']
+                                                                ?.toString() ??
+                                                            '0') ??
+                                                    0.0;
+                                                //double quantity = double.tryParse(item.product['quantity']?.toString() ?? '0') ?? 0.0;
+                                                int quantity = item['quantity'];
+
+                                                // Calculate the item total.
+                                                double itemTotal =
+                                                    price * quantity;
+
+                                                // Add the item total to the running sum.
+                                                return cartSum + quantity;
+                                              },
+                                            ).toStringAsFixed(0),
+                                          )),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * .05,
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * .05,
-                ),
-              ],
-            ),
-    );
+              );
   }
 }
