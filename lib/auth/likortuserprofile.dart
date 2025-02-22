@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -295,6 +294,57 @@ class _LikortUserProfileState extends State<LikortUserProfile> {
                 elevation: 8.0,
               ).then((value) {
                 if (value != null) {
+                  if(value == 3){
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: false, // user must tap button!
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Sign Out'),
+                          content: const SingleChildScrollView(
+                            child: ListBody(
+                              children: <Widget>[
+                                Text('Are you sure you want to sign out?'),
+                              ],
+                            ),
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('Cancel'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            TextButton(
+                              child: const Text('Sign Out'),
+                              onPressed: () async {
+                                try {FirebaseAuth.instance.signOut();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('User signed out successfully.'),
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                                print('User signed out successfully.');
+                                // Navigate to the login screen or any other screen after sign-out.
+                                Navigator.of(context).pushReplacementNamed('/likortlogin');
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error signing out: $e'),
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                  print('Error signing out: $e');
+                                  // Handle any errors that occur during sign-out.
+                                }
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
                   // Handle menu selection here
                   if (value == 2) {
                     Navigator.of(context)

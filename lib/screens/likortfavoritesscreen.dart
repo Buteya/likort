@@ -1,13 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
 // import '../models/likortartproduct.dart';
-import '../models/likortfavorites.dart';
-import '../models/likortstore.dart';
-import '../models/likortusers.dart';
 
 class LikortFavoriteScreen extends StatefulWidget {
   const LikortFavoriteScreen({super.key});
@@ -62,17 +57,11 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
   Future<void> loadFavoriteData() async{
     try {
       final userData =  await fetchFavoriteData();
-      if (userData != null) {
-        setState(() {
-          favorites = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        favorites = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -85,17 +74,11 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
   Future<void> loadStoreData() async{
     try {
       final userData =  await fetchStoreData();
-      if (userData != null) {
-        setState(() {
-          stores = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        stores = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -121,7 +104,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
 
-    return _isLoading?Scaffold(body:Center(child:CircularProgressIndicator())): Scaffold(
+    return _isLoading?const Scaffold(body:Center(child:CircularProgressIndicator())): Scaffold(
       appBar: AppBar(
         title: const Text('Favorites'),
         leading: IconButton(

@@ -110,7 +110,7 @@ class _LikortManageStoreScreenState extends State<LikortManageStoreScreen> {
         future: getStoreData(userId),
         builder: (BuildContext context,
             AsyncSnapshot<Map<String, dynamic>?> snapshot) {
-          return snapshot.connectionState == ConnectionState.waiting? Scaffold(body: Center(child: CircularProgressIndicator()),): Scaffold(
+          return snapshot.connectionState == ConnectionState.waiting? const Scaffold(body: Center(child: CircularProgressIndicator()),): Scaffold(
             appBar: AppBar(),
             drawer: Drawer(
               child: ListView(
@@ -124,7 +124,7 @@ class _LikortManageStoreScreenState extends State<LikortManageStoreScreen> {
                       // Use Stack to position text over image
                       children: [
                         ClipRRect(
-                          borderRadius:BorderRadius.only(topRight: Radius.circular(15.0)),
+                          borderRadius:const BorderRadius.only(topRight: Radius.circular(15.0)),
                           child: Image.network(
                             snapshot.data!['imageUrls'][0],
                             fit: BoxFit.cover, // Cover the entire header
@@ -202,7 +202,7 @@ class _LikortManageStoreScreenState extends State<LikortManageStoreScreen> {
             body:
                 snapshot.connectionState == ConnectionState.waiting?
                   // While the Future is still running
-                  Center(child: const CircularProgressIndicator()):snapshot.hasError?
+                  const Center(child: CircularProgressIndicator()):snapshot.hasError?
                   Text('Error: ${snapshot.error}'):
                 snapshot.hasData?
                   SingleChildScrollView(
@@ -339,7 +339,7 @@ class _LikortManageStoreScreenState extends State<LikortManageStoreScreen> {
                                                           Padding(
                                                             padding: const EdgeInsets.only(top:20.0,left: 30,right: 30,),
                                                             child: ClipRRect(
-                                                              borderRadius:BorderRadius.only(topRight: Radius.circular(15),topLeft: Radius.circular(15),),
+                                                              borderRadius:const BorderRadius.only(topRight: Radius.circular(15),topLeft: Radius.circular(15),),
                                                               child: Image.network(
                                                                 width: MediaQuery.sizeOf(context).width,
                                                                 height: MediaQuery.sizeOf(context).height*.6,
@@ -488,7 +488,7 @@ class _LikortManageStoreScreenState extends State<LikortManageStoreScreen> {
                       ),
                     ),
                   ):
-                   Center(child: Text('No data')),
+                   const Center(child: Text('No data')),
 
 
 

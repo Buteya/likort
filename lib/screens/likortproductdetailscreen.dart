@@ -5,11 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/likortartproduct.dart';
 import '../models/likortcartitem.dart';
-import '../models/likortfavorites.dart';
-import '../models/likortstore.dart';
-import '../models/likortusers.dart';
 
 class LikortProductDetailScreen extends StatefulWidget {
   const LikortProductDetailScreen({super.key});
@@ -111,17 +107,11 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   Future<void> loadFavoriteData() async{
     try {
       final userData =  await fetchFavoriteData();
-      if (userData != null) {
-        setState(() {
-          favorites = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        favorites = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -165,17 +155,11 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   Future<void> loadProductData() async{
     try {
       final userData =  await fetchProductData();
-      if (userData != null) {
-        setState(() {
-          products = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        products = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -188,17 +172,11 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   Future<void> loadStoreData() async{
     try {
       final userData =  await fetchStoreData();
-      if (userData != null) {
-        setState(() {
-          stores = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        stores = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -224,7 +202,7 @@ class _LikortProductDetailScreenState extends State<LikortProductDetailScreen> {
   Widget build(BuildContext context) {
     final index = ModalRoute.of(context)!.settings.arguments as int;
 
-    return _isLoading ?Scaffold(body: Center(child: CircularProgressIndicator(),),):Scaffold(
+    return _isLoading ?const Scaffold(body: Center(child: CircularProgressIndicator(),),):Scaffold(
       appBar: AppBar(
         leading: InkWell(
             onTap: () {

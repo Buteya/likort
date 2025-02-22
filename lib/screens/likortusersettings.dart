@@ -2,9 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../models/likortusers.dart' as userLikort;
 
 class LikortUserSettings extends StatefulWidget {
   const LikortUserSettings({super.key});
@@ -178,7 +176,7 @@ class _LikortUserSettingsState extends State<LikortUserSettings> {
       //     Center(child: Text('delete account')),
       //   ],
       // ),
-        body: _isLoading?Center(child: CircularProgressIndicator(),):ListView.builder(
+        body: _isLoading?const Center(child: CircularProgressIndicator(),):ListView.builder(
           itemCount: items.length,
           itemBuilder: (context, index) {
             return ListTile(

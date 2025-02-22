@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../models/likortcartitem.dart';
-import '../models/likortstore.dart';
 
 class LikortCartScreen extends StatefulWidget {
   const LikortCartScreen({super.key});
@@ -46,17 +43,11 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
   Future<void> loadCartItemData() async {
     try {
       final userData = await fetchCartItemData();
-      if (userData != null) {
-        setState(() {
-          cartItems = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        cartItems = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -85,17 +76,11 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
   Future<void> loadStoreData() async {
     try {
       final userData = await fetchStoreData();
-      if (userData != null) {
-        setState(() {
-          stores = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        stores = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -118,7 +103,7 @@ class _LikortCartScreenState extends State<LikortCartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoading?Scaffold(body: Center(child: CircularProgressIndicator(),),):Scaffold(
+    return _isLoading?const Scaffold(body: Center(child: CircularProgressIndicator(),),):Scaffold(
       appBar: AppBar(
         leading: InkWell(
           onTap: () {

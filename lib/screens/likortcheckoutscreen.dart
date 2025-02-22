@@ -67,7 +67,6 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseJson = json.decode(response.body);
-     ;
         print(responseJson);
         return responseJson;
       } else {
@@ -219,17 +218,11 @@ class _LikortCheckoutScreenState extends State<LikortCheckoutScreen> {
   Future<void> loadCartItemData() async {
     try {
       final userData = await fetchCartItemData();
-      if (userData != null) {
-        setState(() {
-          cartItems = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        cartItems = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }

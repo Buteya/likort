@@ -7,11 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/likortartproduct.dart';
 
 import '../models/likortfavorites.dart';
-import '../models/likortstore.dart';
-import '../models/likortusers.dart' as userLikort;
 import '../widgets/customappbar.dart';
 
 class LikortHomeScreen extends StatefulWidget {
@@ -44,7 +41,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     if(filteredProducts.isNotEmpty){
       return filteredProducts.map((product) => product['typeOfArt']).toSet();
     }else{
-      return Set();
+      return <dynamic>{};
     }
   }
 
@@ -147,7 +144,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         if (kDebugMode) {
           print('user not found');
         }
-        return null;
+        return;
       }
 
 
@@ -292,17 +289,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   Future<void> loadStoreData() async{
     try {
       final userData =  await fetchStoreData();
-      if (userData != null) {
-        setState(() {
-          stores = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        stores = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -326,17 +317,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   Future<void> _loadUserData() async {
     try {
       final userData = await fetchData();
-      if (userData != null) {
-        setState(() {
-          filteredProducts = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        filteredProducts = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -348,17 +333,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   Future<void> _loadFavoriteData() async {
     try {
       final userData = await fetchData();
-      if (userData != null) {
-        setState(() {
-          favoriteProducts = userData;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        favoriteProducts = userData;
+        _isLoading = false;
+      });
+        } catch (e) {
       if (kDebugMode) {
         print('Error loading user data: $e');
       }
@@ -434,7 +413,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     );
     // _selectedCategory = categories.first;
 
-    return _isLoading?Scaffold(body:Center(child: CircularProgressIndicator(),),):Scaffold(
+    return _isLoading?const Scaffold(body:Center(child: CircularProgressIndicator(),),):Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(
@@ -648,7 +627,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                   builder: (BuildContext context,
                       AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
                     return snapshot.connectionState == ConnectionState.waiting
-                        ? Center(
+                        ? const Center(
                             child: CircularProgressIndicator(),
                           )
                         : snapshot.hasError
@@ -824,7 +803,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                           ;
                                         }),
                                   )
-                                : Center(
+                                : const Center(
                                     child: Text('No art to display'),
                                   );
                   }),
