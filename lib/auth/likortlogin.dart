@@ -22,22 +22,91 @@ class _LikortLoginState extends State<LikortLogin> {
   late bool _isLoading = false;
 
   Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
+    setState(() {
+      _isLoading =true;
+    });
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       if(email == userCredential.user!.email){
+        //messages shown if user already exists
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        // Show the first SnackBar
+        scaffoldMessenger
+            .showSnackBar(
+          const SnackBar(
+            content: Text('Login successful.'),
+            duration: Duration(seconds: 2),
+          ),
+        )
+            .closed
+            .then((_) {
+          // Show the second SnackBar after the first one is closed
+          // scaffoldMessenger.showSnackBar(
+          //   const SnackBar(
+          //     content: Text('Login instead!!!'),
+          //     duration: Duration(seconds: 2),
+          //   ),
+          // );
+        });
         Navigator.pushNamed(context, '/likorthomescreen');
       }
+      setState(() {
+        _isLoading = false;
+      });
       return userCredential;
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
+        //messages shown if user already exists
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        // Show the first SnackBar
+        scaffoldMessenger
+            .showSnackBar(
+          const SnackBar(
+            content: Text('No user found for that email.'),
+            duration: Duration(seconds: 2),
+          ),
+        )
+            .closed
+            .then((_) {
+          // Show the second SnackBar after the first one is closed
+          // scaffoldMessenger.showSnackBar(
+          //   const SnackBar(
+          //     content: Text('Login instead!!!'),
+          //     duration: Duration(seconds: 2),
+          //   ),
+          // );
+        });
         print('No user found for that email.');
       } else if (e.code == 'wrong-password') {
+        //messages shown if user already exists
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        // Show the first SnackBar
+        scaffoldMessenger
+            .showSnackBar(
+          const SnackBar(
+            content: Text('Wrong password provided for that user.'),
+            duration: Duration(seconds: 2),
+          ),
+        )
+            .closed
+            .then((_) {
+          // Show the second SnackBar after the first one is closed
+          // scaffoldMessenger.showSnackBar(
+          //   const SnackBar(
+          //     content: Text('Login instead!!!'),
+          //     duration: Duration(seconds: 2),
+          //   ),
+          // );
+        });
         print('Wrong password provided for that user.');
       }
+      setState(() {
+        _isLoading = false;
+      });
       return null; // or handle the error appropriately
     }
   }
@@ -183,11 +252,7 @@ class _LikortLoginState extends State<LikortLogin> {
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                      signInWithEmailAndPassword(_emailController.text, _passwordController.text).then((_){
-                        _login(_emailController.text, _passwordController.text);
-                      });setState(() {
-                        _isLoading = true;
-                      });
+                      signInWithEmailAndPassword(_emailController.text, _passwordController.text);
                     _emailController.clear();
                     _passwordController.clear();
                   }
@@ -202,7 +267,7 @@ class _LikortLoginState extends State<LikortLogin> {
                   Navigator.of(context)
                       .pushReplacementNamed('/likortforgotpassword');
                 },
-                child: const Text('forgot password?'),
+                child: const Text('Forgot password?'),
               ),
             ),
             Padding(
@@ -211,7 +276,7 @@ class _LikortLoginState extends State<LikortLogin> {
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/likortsignup');
                 },
-                child: const Text('cant login? signup!!!'),
+                child: const Text('Can\'t login? Signup'),
               ),
             ),
           ],

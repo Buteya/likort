@@ -404,7 +404,6 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     final ThemeMode appThemeMode = widget.themeMode;
     final Function() toggleThemeMode = widget.toggleThemeMode;
     final productList = filteredProducts;
-
     final favorites = Provider.of<Favorites>(
       context,
       listen: false,
@@ -440,7 +439,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                       duration: const Duration(milliseconds: 300),
                       child: SizedBox(
                         height: _searchBarVisible
-                            ? MediaQuery.of(context).size.height * .28
+                            ? (MediaQuery.sizeOf(context).height < 670)?MediaQuery.of(context).size.height * .29 :(MediaQuery.sizeOf(context).height >900)?MediaQuery.of(context).size.height * .2:MediaQuery.of(context).size.height * .27
                             : MediaQuery.of(context).size.height * .01,
                         child: _searchBarVisible
                             ? Column(
@@ -680,20 +679,21 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                               child: GridView.builder(
                                                   controller: _scrollController,
                                                   gridDelegate:
-                                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                                    childAspectRatio: 0.39,
+                                                       SliverGridDelegateWithFixedCrossAxisCount(
+                                                         mainAxisExtent: MediaQuery.sizeOf(context).height * 0.55,
+                                                    childAspectRatio:  0.26,
                                                     crossAxisCount:
                                                         2, // Number of items per row
                                                     crossAxisSpacing:
                                                         8.0, // Spacing between columns
                                                     mainAxisSpacing:
-                                                        8.0, // Spacing between rows
+                                                        2.0, // Spacing between rows
                                                   ),
                                                   itemCount:
                                                       filteredProducts.length,
                                                   itemBuilder:
                                                       (context, index) {
-                                                    return InkWell(
+                                                    return GestureDetector(
                                                       onTap: () {
                                                         Navigator.of(context)
                                                             .pushNamed(
@@ -706,7 +706,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                             MainAxisAlignment
                                                                 .center,
                                                         mainAxisSize:
-                                                            MainAxisSize.max,
+                                                            MainAxisSize.min,
                                                         children: [
                                                           ClipRRect(
                                                             borderRadius:
@@ -869,13 +869,13 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                                 .textTheme
                                                                 .bodyLarge,
                                                           ),
-                                                          SizedBox(
-                                                            height: MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .height *
-                                                                .1,
-                                                          )
+                                                          // SizedBox(
+                                                          //   height: MediaQuery.of(
+                                                          //               context)
+                                                          //           .size
+                                                          //           .height *
+                                                          //       .1,
+                                                          // )
                                                         ],
                                                       ),
                                                     );

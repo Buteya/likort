@@ -56,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/likortlogin');
                 },
-                child: const Text('Back to login!!!'),
+                child: const Text('Back to login'),
               ),
             ),
           ],

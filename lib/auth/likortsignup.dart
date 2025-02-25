@@ -208,6 +208,26 @@ class _LikortSignupState extends State<LikortSignup> {
           setState(() {
             _isLoading = false;
           });
+          //messages shown if user already exists
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
+          // Show the first SnackBar
+          scaffoldMessenger
+              .showSnackBar(
+            const SnackBar(
+              content: Text('The password provided is too weak.'),
+              duration: Duration(seconds: 2),
+            ),
+          )
+              .closed
+              .then((_) {
+            // Show the second SnackBar after the first one is closed
+            // scaffoldMessenger.showSnackBar(
+            //   const SnackBar(
+            //     content: Text('Login instead!!!'),
+            //     duration: Duration(seconds: 2),
+            //   ),
+            // );
+          });
           print('The password provided is too weak.');
         }
       } else if (e.code == 'email-already-in-use') {
@@ -215,12 +235,52 @@ class _LikortSignupState extends State<LikortSignup> {
           setState(() {
             _isLoading = false;
           });
+          //messages shown if user already exists
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
+          // Show the first SnackBar
+          scaffoldMessenger
+              .showSnackBar(
+            const SnackBar(
+              content: Text('The account already exists for that email'),
+              duration: Duration(seconds: 2),
+            ),
+          )
+              .closed
+              .then((_) {
+            // Show the second SnackBar after the first one is closed
+            // scaffoldMessenger.showSnackBar(
+            //   const SnackBar(
+            //     content: Text('Login instead!!!'),
+            //     duration: Duration(seconds: 2),
+            //   ),
+            // );
+          });
           print('The account already exists for that email.');
         }
       } else {
         if (kDebugMode) {
           setState(() {
             _isLoading = false;
+          });
+          //messages shown if user already exists
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
+          // Show the first SnackBar
+          scaffoldMessenger
+              .showSnackBar(
+            SnackBar(
+              content: Text('Error  $e'),
+              duration: const Duration(seconds: 2),
+            ),
+          )
+              .closed
+              .then((_) {
+            // Show the second SnackBar after the first one is closed
+            // scaffoldMessenger.showSnackBar(
+            //   const SnackBar(
+            //     content: Text('Login instead!!!'),
+            //     duration: Duration(seconds: 2),
+            //   ),
+            // );
           });
           print('FirebaseAuthException: $e');
         }
@@ -231,6 +291,27 @@ class _LikortSignupState extends State<LikortSignup> {
         setState(() {
           _isLoading = false;
         });
+        //messages shown if user already exists
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        // Show the first SnackBar
+        scaffoldMessenger
+            .showSnackBar(
+          SnackBar(
+            content: Text('Unexpected Error $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        )
+            .closed
+            .then((_) {
+          // Show the second SnackBar after the first one is closed
+          // scaffoldMessenger.showSnackBar(
+          //   const SnackBar(
+          //     content: Text('Login instead!!!'),
+          //     duration: Duration(seconds: 2),
+          //   ),
+          // );
+        });
+
         print('Unexpected Error: $e');
       }
       setState(() {
@@ -784,7 +865,7 @@ class _LikortSignupState extends State<LikortSignup> {
                                       .pushReplacementNamed('/likortlogin');
                                 },
                                 child: const Text(
-                                    'are you already signed up? login!!!'),
+                                    'Already signed up? Login'),
                               ),
                             ),
                             const SizedBox(
