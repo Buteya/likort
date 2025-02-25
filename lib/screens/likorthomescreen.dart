@@ -439,7 +439,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                       duration: const Duration(milliseconds: 300),
                       child: SizedBox(
                         height: _searchBarVisible
-                            ? (MediaQuery.sizeOf(context).height < 670)?MediaQuery.of(context).size.height * .29 :(MediaQuery.sizeOf(context).height >900)?MediaQuery.of(context).size.height * .2:MediaQuery.of(context).size.height * .27
+                            ? (MediaQuery.sizeOf(context).height < 670)?MediaQuery.of(context).size.height * .29 :(MediaQuery.sizeOf(context).height >900)?MediaQuery.of(context).size.height * .2:MediaQuery.of(context).size.height * .28
                             : MediaQuery.of(context).size.height * .01,
                         child: _searchBarVisible
                             ? Column(
