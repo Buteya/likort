@@ -14,7 +14,7 @@ class LikortFavoriteScreen extends StatefulWidget {
 
 class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
   List<Map<String, dynamic>> stores = [];
-  List<Map<String, dynamic>> favorites = [];
+  Map<String, dynamic> favorites = {};
   bool _isLoading = false;
 
   @override
@@ -25,19 +25,19 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
     super.initState();
   }
 
-  Future<List<Map<String, dynamic>>> fetchFavoriteData() async {
+  Future<Map<String, dynamic>> fetchFavoriteData() async {
     try {
       QuerySnapshot querySnapshot =
           await FirebaseFirestore.instance.collection('favorites').get();
-      List<Map<String, dynamic>> items = [];
+      Map<String, dynamic> items = {};
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-        items.add(doc.data() as Map<String, dynamic>);
+        items=doc.data() as Map<String, dynamic>;
       }
       print(items);
       return items;
     } catch (e) {
       print("Error fetching data: $e");
-      return []; //Return an empty list in case of error
+      return {}; //Return an empty list in case of error
     }
   }
 
@@ -142,7 +142,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                               crossAxisSpacing: 8.0, // Spacing between columns
                               mainAxisSpacing: 8.0, // Spacing between rows
                             ),
-                            itemCount: favorites.length,
+                            itemCount: favorites['favoriteProducts'].length,
                             itemBuilder: (context, index) {
                               return InkWell(
                                 onTap: () {
@@ -156,7 +156,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(15.0),
                                       child: Image.network(
-                                        favorites[index]['favoriteProducts']
+                                        favorites['favoriteProducts']
                                             [index]['imageUrls'][0],
                                         width: screenSize.width * .83,
                                         height: screenSize.height / 2.66,
@@ -171,37 +171,37 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                                               const EdgeInsets.only(top: 8.0),
                                           child: InkWell(
                                             onTap: () {
-                                              if (!favorites.any((item) =>
-                                                  item.values ==
-                                                  favorites[index]
-                                                      ['favoriteProducts'])) {
-                                              } else if (favorites.any((item) =>
-                                                  item.values ==
-                                                  favorites[index]
-                                                      ['favoriteProducts'])) {}
+                                              if (!favorites['favoriteProducts'].any((item) =>
+                                                  item['favoriteProducts'] ==
+                                                  favorites
+                                                      ['favoriteProducts'][index])) {
+                                              } else if (favorites['favoriteProducts'].any((item) =>
+                                                  item['favoriteProducts'] ==
+                                                  favorites
+                                                      ['favoriteProducts'][index])) {}
                                             },
-                                            child: favorites.any((item) =>
+                                            child: favorites['favoriteProducts'].any((item) =>
                                                     item['favoriteProducts'] ==
-                                                    favorites[index]
-                                                        ['favoriteProducts'])
+                                                    favorites
+                                                        ['favoriteProducts'][index])
                                                 ? Icon(
                                                     Icons.favorite_rounded,
-                                                    color: favorites.any((item) =>
+                                                    color: favorites['favoriteProducts'].any((item) =>
                                                             item[
                                                                 'favoriteProducts'] ==
-                                                            favorites[index][
-                                                                'favoriteProducts'])
+                                                            favorites[
+                                                                'favoriteProducts'][index])
                                                         ? Colors.red
                                                         : Colors.grey,
                                                   )
                                                 : Icon(
                                                     Icons
                                                         .favorite_border_rounded,
-                                                    color: favorites.any((item) =>
+                                                    color: favorites['favoriteProducts'].any((item) =>
                                                             item[
                                                                 'favoriteProducts'] ==
-                                                            favorites[index][
-                                                                'favoriteProducts'])
+                                                            favorites[
+                                                                'favoriteProducts'][index])
                                                         ? Colors.red
                                                         : Colors.grey,
                                                   ),
@@ -216,14 +216,14 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                                       ],
                                     ),
                                     Text(
-                                      favorites[index]['favoriteProducts']
+                                      favorites['favoriteProducts']
                                           [index]['name'],
                                       style: const TextStyle(
                                         fontSize: 14,
                                       ),
                                     ),
                                     Text(
-                                      getStoreName(favorites[index]
+                                      getStoreName(favorites
                                               ['favoriteProducts'][index]
                                           ['storeId']),
                                       style: const TextStyle(
@@ -231,7 +231,7 @@ class _LikortFavoriteScreenState extends State<LikortFavoriteScreen> {
                                           fontWeight: FontWeight.bold),
                                     ),
                                     Text(
-                                      '\$${favorites[index]['favoriteProducts'][index]['price']}',
+                                      '\$${favorites['favoriteProducts'][index]['price']}',
                                       style:
                                           Theme.of(context).textTheme.bodyLarge,
                                     ),

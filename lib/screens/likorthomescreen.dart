@@ -35,7 +35,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
   String? _selectedCategory; // Initial filter category
   late FocusNode _searchFocusNode;
   List<Map<String, dynamic>> filteredProducts = [];
-  List<Map<String, dynamic>> favoriteProducts = [];
+  Map<String, dynamic> favoriteProducts = {};
   Set<dynamic> get categories {
     if (filteredProducts.isNotEmpty) {
       return filteredProducts.map((product) => product['typeOfArt']).toSet();
@@ -154,7 +154,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
         'id': id,
         'userId': userId,
         'favoriteProducts': listProducts,
-        'created': FieldValue.serverTimestamp(), // Use server timestamp
+        'updated': FieldValue.serverTimestamp(), // Use server timestamp
       };
 
       for (final favorite in favoriteData.values) {
@@ -163,15 +163,75 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
       // 5. Save the user data to Firestore
       CollectionReference usersCollection =
           FirebaseFirestore.instance.collection('favorites');
-      await usersCollection.doc(userId).set(favoriteData).then((_) {
+      await usersCollection.doc(userId).set({
+        'id': id,
+        'userId': userId,
+        'favoriteProducts': FieldValue.arrayUnion(listProducts),
+        'created': FieldValue.serverTimestamp(), // Use server timestamp
+      },SetOptions(merge: true,)).then((_) {
         if (kDebugMode) {
-          print('User data saved successfully!');
+          print('Favorite saved successfully!');
         }
       }).catchError((error) {
         if (kDebugMode) {
-          print('Error saving user data: $error');
+          print('Error saving Favorite: $error');
         }
-        throw Exception('Failed to save user data: $error');
+        throw Exception('Failed to save Favorite: $error');
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Unexpected Error: $e');
+      }
+    }
+  }
+
+  Future<void> deleteFavorite(Map products) async {
+    final id = uuid.v4();
+    final listProducts = [];
+    try {
+      // 1. Create the user with email and password
+      var userId = FirebaseAuth.instance.currentUser?.uid;
+
+      // 2. Check if the user is created
+      if (userId == null) {
+        if (kDebugMode) {
+          print('user not found');
+        }
+        return;
+      }
+
+      listProducts.add(products);
+
+      // 3. Get the user ID
+      print(userId);
+      // 4. Create the user data map
+      Map<String, dynamic> favoriteData = {
+        'id': id,
+        'userId': userId,
+        'favoriteProducts': listProducts,
+        'created': FieldValue.serverTimestamp(), // Use server timestamp
+      };
+
+      for (final favorite in favoriteData.values) {
+        print(favorite);
+      }
+      // 5. Save the user data to Firestore
+      CollectionReference usersCollection =
+      FirebaseFirestore.instance.collection('favorites');
+      await usersCollection.doc(userId).update({
+        'id': id,
+        'userId': userId,
+        'favoriteProducts': FieldValue.arrayRemove(listProducts),
+        'updated': FieldValue.serverTimestamp(), // Use server timestamp
+      }).then((_) {
+        if (kDebugMode) {
+          print('Favorite deleted successfully!');
+        }
+      }).catchError((error) {
+        if (kDebugMode) {
+          print('Error deleting Favorite: $error');
+        }
+        throw Exception('Failed to delete Favorite: $error');
       });
     } catch (e) {
       if (kDebugMode) {
@@ -329,7 +389,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
 
   Future<void> _loadFavoriteData() async {
     try {
-      final userData = await fetchData();
+      final userData = await fetchFavoriteData();
       setState(() {
         favoriteProducts = userData;
         _isLoading = false;
@@ -344,19 +404,19 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchFavoriteData() async {
+  Future<Map<String, dynamic>> fetchFavoriteData() async {
     try {
       QuerySnapshot querySnapshot =
           await FirebaseFirestore.instance.collection('favorites').get();
-      List<Map<String, dynamic>> items = [];
+      Map<String, dynamic> items = {};
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-        items.add(doc.data() as Map<String, dynamic>);
+        items = doc.data() as Map<String, dynamic>;
       }
       print(items);
       return items;
     } catch (e) {
       print("Error fetching data: $e");
-      return []; //Return an empty list in case of error
+      return {}; //Return an empty list in case of error
     }
   }
 
@@ -439,7 +499,11 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                       duration: const Duration(milliseconds: 300),
                       child: SizedBox(
                         height: _searchBarVisible
-                            ? (MediaQuery.sizeOf(context).height < 670)?MediaQuery.of(context).size.height * .29 :(MediaQuery.sizeOf(context).height >900)?MediaQuery.of(context).size.height * .2:MediaQuery.of(context).size.height * .28
+                            ? (MediaQuery.sizeOf(context).height < 670)
+                                ? MediaQuery.of(context).size.height * .29
+                                : (MediaQuery.sizeOf(context).height > 900)
+                                    ? MediaQuery.of(context).size.height * .2
+                                    : MediaQuery.of(context).size.height * .28
                             : MediaQuery.of(context).size.height * .01,
                         child: _searchBarVisible
                             ? Column(
@@ -679,9 +743,13 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                               child: GridView.builder(
                                                   controller: _scrollController,
                                                   gridDelegate:
-                                                       SliverGridDelegateWithFixedCrossAxisCount(
-                                                         mainAxisExtent: MediaQuery.sizeOf(context).height * 0.55,
-                                                    childAspectRatio:  0.26,
+                                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                                    mainAxisExtent:
+                                                        MediaQuery.sizeOf(
+                                                                    context)
+                                                                .height *
+                                                            0.55,
+                                                    childAspectRatio: 0.26,
                                                     crossAxisCount:
                                                         2, // Number of items per row
                                                     crossAxisSpacing:
@@ -777,33 +845,29 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                                   onTap: () {
                                                                     setState(
                                                                         () {
-                                                                      if (!favoriteProducts
+                                                                      if (!favoriteProducts['favoriteProducts']
                                                                           .any(
                                                                               (item) {
+                                                                                print(item['id']);
+                                                                                print(snapshot.data![index]['id']);
                                                                         return item['id'] ==
                                                                             snapshot.data![index]['id'];
                                                                       })) {
                                                                         //add favorites
                                                                         createFavorite(
                                                                             snapshot.data![index]);
-                                                                      } else if (favoriteProducts
+                                                                      } else if (favoriteProducts['favoriteProducts']
                                                                           .any(
                                                                               (item) {
                                                                         return item['id'] ==
                                                                             snapshot.data![index]['id'];
                                                                       })) {
                                                                         //remove favorite
-                                                                        favoriteProducts
-                                                                            .remove(snapshot.data![index]);
-                                                                        deleteDocumentByFieldValue(
-                                                                            'favorites',
-                                                                            'id',
-                                                                            snapshot.data![index]['id'],
-                                                                            FirebaseAuth.instance.currentUser!.uid);
+                                                                       deleteFavorite(snapshot.data![index]);
                                                                       }
                                                                     });
                                                                   },
-                                                                  child: favoriteProducts
+                                                                  child: favoriteProducts['favoriteProducts']
                                                                           .any(
                                                                               (item) {
                                                                     return item[
@@ -815,7 +879,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                                       ? Icon(
                                                                           Icons
                                                                               .favorite_rounded,
-                                                                          color: favoriteProducts.any((item) {
+                                                                          color: favoriteProducts['favoriteProducts'].any((item) {
                                                                             return item['id'] ==
                                                                                 snapshot.data![index]['id'];
                                                                           })
@@ -825,7 +889,7 @@ class _LikortHomeScreenState extends State<LikortHomeScreen> {
                                                                       : Icon(
                                                                           Icons
                                                                               .favorite_border_rounded,
-                                                                          color: favoriteProducts.any((item) {
+                                                                          color: favoriteProducts['favoriteProducts'].any((item) {
                                                                             return item['id'] ==
                                                                                 snapshot.data![index]['id'];
                                                                           })
